@@ -23,18 +23,23 @@ on:
 permissions:
   contents: write
 
+# Runs that write to main wait in line (up to 100) instead of cancelling each other.
 concurrency:
   group: content-writes
   cancel-in-progress: false
+  queue: max
 
 jobs:
   add:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }} # the branch tip, including earlier queued runs' commits
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
+      - run: npm ci
       - name: Read inputs
         id: in
         env:
@@ -50,13 +55,16 @@ jobs:
             require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `doi=${doi}\nselected=${selected}\n`);
           '
       - name: Look up DOI and write the file
+        id: add
         env:
           DOI: ${{ steps.in.outputs.doi }}
           SELECTED: ${{ steps.in.outputs.selected }}
         run: node scripts/add-publication.mjs "$DOI" $([ "$SELECTED" = "true" ] && echo --selected)
-      - name: Check the site still builds and refresh the CV PDF
-        run: npm ci && npm run cv:pdf
+      - name: Check the site builds and refresh the CV PDF
+        if: steps.add.outputs.added != '0'
+        run: npm run cv:pdf
       - name: Commit
+        if: steps.add.outputs.added != '0'
         env:
           DOI: ${{ steps.in.outputs.doi }}
         run: |

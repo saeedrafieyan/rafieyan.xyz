@@ -12,7 +12,7 @@ const d = item.data;
 const isPost = newsIsPost(item);
 ---
 
-<li class:list={['news-item', { 'with-margin': marginDates }]}>
+<li class:list={['news-item', { 'with-margin': marginDates }]} id={`news-${item.id}`}>
   <time class:list={['news-date', { margin: marginDates }]} datetime={isoDay(d.date)}>{monthYear(d.date)}</time>
   <div class={marginDates ? 'main' : undefined}>
     {
@@ -29,7 +29,13 @@ const isPost = newsIsPost(item);
           {d.link && (
             <>
               {' '}
-              <a href={d.link}>Read more</a>
+              <a href={d.link}>
+                {d.link_label ?? (
+                  <>
+                    Read more<span class="visually-hidden">: {d.text.split(' ').slice(0, 10).join(' ')}…</span>
+                  </>
+                )}
+              </a>
             </>
           )}
         </p>

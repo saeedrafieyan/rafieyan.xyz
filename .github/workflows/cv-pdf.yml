@@ -1,5 +1,5 @@
-# Rebuild public/files/saeed-rafieyan-cv.pdf by printing the /cv/ page with
-# headless Chrome, whenever the CV, publications, projects or profile change.
+# Rebuild public/files/saeed-rafieyan-cv.pdf by printing the /cv/ page with headless Chrome,
+# whenever the CV content or the code that renders /cv/ changes.
 name: Rebuild CV PDF
 
 on:
@@ -11,7 +11,13 @@ on:
       - 'src/content/projects/**'
       - 'src/content/profile/**'
       - 'src/pages/cv/**'
+      - 'src/components/**'
+      - 'src/layouts/**'
+      - 'src/lib/**'
       - 'src/styles/**'
+      - 'astro.config.mjs'
+      - 'scripts/cv-pdf.mjs'
+      - 'package-lock.json'
   workflow_dispatch:
     inputs:
       payload:
@@ -25,13 +31,16 @@ permissions:
 concurrency:
   group: content-writes
   cancel-in-progress: false
+  queue: max
 
 jobs:
   pdf:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }} # the branch tip, not the commit that triggered this run
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci

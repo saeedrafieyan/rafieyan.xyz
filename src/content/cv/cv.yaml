@@ -38,7 +38,7 @@ education:
       - Digital Manufacturing of Biomimetic Systems group.
   - role: MSc in Chemical Engineering – Biomedical Engineering
     org: Tarbiat Modares University
-    org_url: https://www.modares.ac.ir/en
+    org_url: https://en.modares.ac.ir/
     place: Tehran, Iran
     start: 2018-09
     end: 2022-02
@@ -47,7 +47,6 @@ education:
       - 'GPA: 3.78 / 4'
   - role: BSc in Chemical Engineering
     org: Tafresh University
-    org_url: https://tafreshu.ac.ir/
     place: Tafresh, Iran
     start: 2013-09
     end: 2017-09
@@ -91,7 +90,7 @@ skills:
     items: Cell culture, MTT assay, decellularisation, hydrogel preparation, scaffold fabrication, 3D printing, freeze-drying
 languages:
   - language: English
-    level: Fluent (TOEFL iBT 90)
+    level: TOEFL iBT 90/120
   - language: Persian
     level: Native
 memberships: []

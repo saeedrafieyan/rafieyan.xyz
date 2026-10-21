@@ -19,12 +19,13 @@ const groups = [
 ];
 
 // Computed standfirst: "9 publications · 5 journal articles, 3 reviews, 1 conference paper"
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const PLURALS: Record<string, string> = { thesis: 'theses' };
+const plural = (n: number, word: string, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 const typeCounts = new Map<string, number>();
 for (const p of pubs) if (p.data.status !== 'under-review') typeCounts.set(p.data.type, (typeCounts.get(p.data.type) ?? 0) + 1);
 const breakdown = [...typeCounts.entries()]
   .sort((a, b) => b[1] - a[1])
-  .map(([t, n]) => plural(n, (TYPE_LABELS[t] ?? t).toLowerCase()))
+  .map(([t, n]) => plural(n, (TYPE_LABELS[t] ?? t).toLowerCase(), PLURALS[t]))
   .join(', ');
 const standfirst = [plural(pubs.length, 'publication'), breakdown, underReview.length ? `${underReview.length} under review` : '']
   .filter(Boolean)
@@ -81,7 +82,7 @@ const jsonLd = pubs
       {
         pubs.length >= 6 && (
           <div class="with-margin">
-            <fieldset class="filters main" data-filters hidden>
+            <fieldset class="filters main js-only" data-filters>
               <legend class="visually-hidden">Filter publications</legend>
               <div class="row">
                 <fieldset class="segmented">
@@ -170,7 +171,6 @@ const jsonLd = pubs
 <script>
   const form = document.querySelector<HTMLFieldSetElement>('[data-filters]');
   if (form) {
-    form.hidden = false;
     const items = [...document.querySelectorAll<HTMLLIElement>('.pub-item')];
     const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
     const count = form.querySelector<HTMLElement>('[data-count]')!;

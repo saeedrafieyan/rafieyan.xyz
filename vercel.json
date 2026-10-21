@@ -3,13 +3,12 @@
   "framework": "astro",
   "trailingSlash": true,
   "redirects": [
-    { "source": "/blog", "destination": "/news/", "permanent": true },
-    { "source": "/blog/:path*", "destination": "/news/", "permanent": true },
-    { "source": "/about", "destination": "/", "permanent": true },
+    { "source": "/blog/:path*/", "destination": "/news/", "permanent": true },
+    { "source": "/about/", "destination": "/", "permanent": true },
     { "source": "/assets/pdf/polymers-14-02097-v4.pdf", "destination": "/files/fan-2022-polymers-review.pdf", "permanent": true },
     { "source": "/assets/pdf/Process_Simulation_of_Biodiesel_Production.pdf", "destination": "/files/rafieyan-2020-biodiesel-ichec.pdf", "permanent": true },
     { "source": "/assets/pdf/:file*", "destination": "/files/saeed-rafieyan-cv.pdf", "permanent": false },
-    { "source": "/assets/img/prof_pic:rest*", "destination": "/uploads/portrait.jpg", "permanent": true }
+    { "source": "/assets/img/prof_pic(.*)", "destination": "/uploads/portrait.jpg", "permanent": true }
   ],
   "headers": [
     {

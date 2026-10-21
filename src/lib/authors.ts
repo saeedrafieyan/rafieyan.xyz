@@ -40,9 +40,11 @@ function matchesOwner(given: string, family: string, ownerNames: string[]) {
   const fam = ascii(family).split(/[\s-]+/);
   const initial = ascii(given).charAt(0);
   return ownerNames.some((name) => {
-    const tokens = ascii(name).split(/\s+/);
-    const ownerFamily = tokens.at(-1) ?? '';
-    return fam.includes(ownerFamily) && (!initial || tokens[0]?.charAt(0) === initial);
+    // Owner names follow the same "Given Family" / "Family, Given" rules as author lines.
+    const owner = parseAuthor(name);
+    const ownerFamily = ascii(owner.family).split(/[\s-]+/).at(-1) ?? '';
+    const ownerInitial = ascii(owner.given).charAt(0);
+    return fam.includes(ownerFamily) && (!initial || !ownerInitial || ownerInitial === initial);
   });
 }
 
@@ -74,11 +76,16 @@ export function truncateAuthors(authors: Author[], max = 8): { shown: AuthorSlot
   return { shown, hidden: authors.length - keep.size };
 }
 
-/** Compact lists: first 3, then the owner if later, then "et al." */
-export function compactAuthors(authors: Author[], max = 6): { shown: Author[]; etAl: boolean } {
+/**
+ * Compact lists: everyone up to the owner when the owner is near the front; otherwise the
+ * first 3, "…", then the owner. "et al." only when authors remain after that.
+ */
+export function compactAuthors(authors: Author[], max = 6): { shown: AuthorSlot[]; etAl: boolean } {
   if (authors.length <= max) return { shown: authors, etAl: false };
-  const shown = authors.slice(0, 3);
-  const owner = authors.find((a) => a.isOwner);
-  if (owner && !shown.includes(owner)) shown.push(owner);
-  return { shown, etAl: true };
+  const owner = authors.findIndex((a) => a.isOwner);
+  if (owner < max) {
+    const n = Math.max(3, owner + 1);
+    return { shown: authors.slice(0, n), etAl: n < authors.length };
+  }
+  return { shown: [...authors.slice(0, 3), 'ellipsis', authors[owner]], etAl: owner < authors.length - 1 };
 }

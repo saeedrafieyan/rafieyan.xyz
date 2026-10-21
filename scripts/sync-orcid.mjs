@@ -5,7 +5,7 @@
 // ignore for good in scripts/orcid-ignore.txt.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ROOT, existingPublications, lookupDoi, normalizeDoi, orcidDois, orcidFromProfile, writePublication } from './lib/publications.mjs';
+import { ROOT, existingPublications, isUpgrade, lookupDoi, normalizeDoi, orcidDois, orcidFromProfile, writePublication } from './lib/publications.mjs';
 
 const orcid = process.argv[2] ?? (await orcidFromProfile());
 if (!orcid) {
@@ -35,13 +35,17 @@ for (const doi of await orcidDois(orcid)) {
       console.log(`- ${doi}: ${pub.sourceType}, not a paper, skipped`);
       continue;
     }
-    if (existing.hasTitle(pub.title)) {
+    // A published version of an entry listed as a preprint / under review is an upgrade, not a copy.
+    const match = existing.byTitle(pub.title);
+    const upgrade = isUpgrade(match, pub);
+    if (match && !upgrade) {
       console.log(`- ${doi}: same title as an existing entry (probably a copy), skipped`);
       continue;
     }
-    const file = await writePublication(pub);
+    const file = await writePublication(pub, { replace: upgrade ? match.file : undefined });
     existing.dois.add(doi);
-    added.push(`- ${pub.title} (${pub.venue ?? pub.type}, ${pub.year}) → \`${file}\``);
+    const note = upgrade ? ` (now published: updates the ${match.status} entry, keeping its topics, projects and links)` : '';
+    added.push(`- ${pub.title} (${pub.venue ?? pub.type}, ${pub.year}) → \`${file}\`${note}`);
     console.log(`✓ ${doi} → ${file}`);
   } catch (err) {
     console.error(`✗ ${doi}: ${err.message}`);

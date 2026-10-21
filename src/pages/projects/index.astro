@@ -1,19 +1,19 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectEntry from '../../components/ProjectEntry.astro';
-import { getProjects } from '../../lib/data';
+import { getProjects, projectHasPage } from '../../lib/data';
 
 const projects = await getProjects();
 const main = projects.filter((p) => p.data.tier !== 'minor');
 const minor = projects.filter((p) => p.data.tier === 'minor');
 ---
 
-<Base title="Projects" description="Open-source models, datasets and tools for tissue engineering and biofabrication.">
+<Base title="Projects" description="Models, datasets and tools for tissue engineering and biofabrication.">
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">
         <h1 class="page-title">Projects</h1>
-        <p class="standfirst">Open-source models, datasets and tools, mostly for tissue engineering and biofabrication.</p>
+        <p class="standfirst">Models, datasets and tools, mostly for tissue engineering and biofabrication.</p>
       </div>
     </header>
 
@@ -41,14 +41,22 @@ const minor = projects.filter((p) => p.data.tier === 'minor');
           <ul class="minor-list main">
             {minor.map((p) => {
               const link = p.data.links.code ?? p.data.links.app;
+              const linkLabel = p.data.links.code ? 'Code' : 'Web app';
               const years = p.data.years.end ? `${p.data.years.start}–${p.data.years.end}` : String(p.data.years.start);
               return (
                 <li>
-                  <b>{p.data.title}</b> · {years} · {p.data.summary}
+                  {projectHasPage(p) ? (
+                    <a href={`/projects/${p.id}/`}>
+                      <b>{p.data.title}</b>
+                    </a>
+                  ) : (
+                    <b>{p.data.title}</b>
+                  )}{' '}
+                  · {years} · {p.data.summary}
                   {link && (
                     <>
                       {' · '}
-                      <a href={link}>Repository</a>
+                      <a href={link}>{linkLabel}</a>
                     </>
                   )}
                 </li>

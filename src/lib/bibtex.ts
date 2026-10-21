@@ -31,6 +31,7 @@ export function baseKey(family: string, year: number, title: string) {
 }
 
 const esc = (s: string) => s.replace(/([&%$#_])/g, '\\$1');
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 export function toBibtex(p: BibSource): string {
   const isThesis = p.type === 'thesis';
@@ -50,7 +51,8 @@ export function toBibtex(p: BibSource): string {
     ['author', p.authors.map((a) => (a.given ? `${a.family}, ${a.given}` : a.family)).join(' and ')],
     [entryType === 'article' ? 'journal' : entryType === 'inproceedings' || entryType === 'incollection' ? 'booktitle' : isThesis ? 'school' : 'howpublished', p.venue && esc(isThesis ? p.venue.replace(/^(msc|phd|master'?s|doctoral)\s+thesis,\s*/i, '') : p.venue)],
     ['year', String(p.year)],
-    ['month', p.date && p.date.length >= 7 ? String(Number(p.date.slice(5, 7))) : undefined],
+    // Only for items not yet in an issue: an online-first month would contradict the volume.
+    ['month', !p.volume && p.date && p.date.length >= 7 && p.date.startsWith(String(p.year)) ? MONTHS[Number(p.date.slice(5, 7)) - 1] : undefined],
     ['volume', p.volume],
     ['number', p.issue],
     ['pages', p.pages?.replace(/[–—]/g, '--')],
@@ -60,7 +62,7 @@ export function toBibtex(p: BibSource): string {
   ];
   const body = fields
     .filter(([, v]) => v)
-    .map(([k, v]) => `  ${k.padEnd(9)} = {${v}}`)
+    .map(([k, v]) => `  ${k.padEnd(9)} = ${k === 'month' ? v : `{${v}}`}`)
     .join(',\n');
   return `@${entryType}{${p.key},\n${body}\n}`;
 }

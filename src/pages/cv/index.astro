@@ -15,9 +15,12 @@ const published = pubs.filter((x) => x.data.status !== 'under-review');
 const underReview = pubs.filter((x) => x.data.status === 'under-review');
 const software = (await getProjects()).filter((x) => x.data.tier !== 'minor');
 
+// Fall back to the PDF rebuilt automatically from this page (scripts/cv-pdf.mjs).
+const AUTO_PDF = '/files/saeed-rafieyan-cv.pdf';
+const cvPdf = p.cv_pdf ?? (existsSync(path.join(process.cwd(), 'public', AUTO_PDF)) ? AUTO_PDF : undefined);
 let pdfSize: string | undefined;
-if (p.cv_pdf?.startsWith('/')) {
-  const file = path.join(process.cwd(), 'public', p.cv_pdf);
+if (cvPdf?.startsWith('/')) {
+  const file = path.join(process.cwd(), 'public', cvPdf);
   if (existsSync(file)) pdfSize = `${Math.max(1, Math.round(statSync(file).size / 1024))} KB`;
 }
 const site = Astro.site ? displayUrl(Astro.site.href) : 'rafieyan.xyz';
@@ -57,13 +60,13 @@ const sections = [
         <p class="meta-line">Updated <time datetime={isoDay(cv.updated)}>{dayMonthYear(cv.updated)}</time></p>
         <div class="action-row no-print">
           {
-            p.cv_pdf && (
-              <a class="btn btn-primary" href={p.cv_pdf} download>
+            cvPdf && (
+              <a class="btn btn-primary" href={cvPdf} download>
                 Download CV (PDF{pdfSize && `, ${pdfSize}`})
               </a>
             )
           }
-          <button type="button" class="btn" data-print hidden>Print</button>
+          <button type="button" class="btn js-only" data-print>Print</button>
         </div>
         <InlineList
           class="jump-list no-print"
@@ -320,7 +323,6 @@ const sections = [
 <script>
   const button = document.querySelector<HTMLButtonElement>('[data-print]');
   if (button) {
-    button.hidden = false;
     button.addEventListener('click', () => window.print());
   }
   // Expand collapsed sections when printing.

@@ -37,7 +37,15 @@ const optionalLink = z.preprocess(
 /** Accepts 2026, "2026-10", "2026-10-07" or a YAML date; stores "YYYY", "YYYY-MM" or "YYYY-MM-DD". */
 const partialDate = z.preprocess(
   (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : typeof v === 'number' ? String(v) : v),
-  z.string().trim().regex(/^\d{4}(-\d{2}(-\d{2})?)?$/, 'use YYYY, YYYY-MM or YYYY-MM-DD'),
+  z
+    .string()
+    .trim()
+    .regex(/^\d{4}(-\d{2}(-\d{2})?)?$/, 'use YYYY, YYYY-MM or YYYY-MM-DD')
+    .refine((s) => {
+      const [y, m = 1, d = 1] = s.split('-').map(Number);
+      const dt = new Date(Date.UTC(y, m - 1, d));
+      return dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+    }, 'not a real date (month 01–12, and the day must exist in that month)'),
 );
 const optionalPartialDate = z.preprocess(blankToUndefined, partialDate.optional());
 
@@ -103,8 +111,8 @@ const profile = defineCollection({
 
 const publications = defineCollection({
   loader: glob({ pattern: '*.{yaml,yml}', base: './src/content/publications' }),
-  schema: clean(z
-    .object({
+  schema: clean(
+    z.object({
       title: z.string().trim().min(1),
       // "Given Family" or "Family, Given". Add * for corresponding author, † for equal contribution.
       authors: z.array(z.string().trim().min(1)).min(1),
@@ -127,11 +135,8 @@ const publications = defineCollection({
       selected: z.boolean().default(false),
       topics: z.array(z.string()).default([]),
       projects: z.array(z.string()).default([]),
-    })
-    .refine((p) => p.status === 'under-review' || p.venue, {
-      message: 'venue (journal / conference) is required unless status is under-review',
-      path: ['venue'],
-    })),
+    }),
+  ),
 });
 
 const projects = defineCollection({
@@ -164,6 +169,7 @@ const news = defineCollection({
     date: z.coerce.date(),
     text: z.string().trim().min(1).max(280, 'keep news items under 280 characters; write a post for more'),
     link: optionalLink,
+    link_label: optionalText,
     kind: z.enum(['paper', 'release', 'talk', 'award', 'position', 'note']).default('note'),
     title: optionalText,
     description: optionalText,
@@ -201,7 +207,10 @@ const cv = defineCollection({
     training: z
       .array(z.object({ name: z.string(), issuer: optionalText, year: z.coerce.number().int().optional(), url: optionalUrl }))
       .default([]),
-    references: z.string().default('Available on request.'),
+    references: z
+      .string()
+      .refine((s) => !/@|\+?\d[\d\s().-]{7,}\d/.test(s), 'References are public: do not put emails or phone numbers here.')
+      .default('Available on request.'),
   })),
 });
 

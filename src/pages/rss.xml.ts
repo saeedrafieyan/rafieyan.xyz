@@ -13,7 +13,9 @@ export const GET: APIRoute = async ({ site }) => {
       title: n.data.title ?? n.data.text,
       description: n.data.description ?? n.data.text,
       pubDate: n.data.date,
-      link: newsIsPost(n) ? `/news/${n.id}/` : (n.data.link ?? '/news/'),
+      link: newsIsPost(n) ? `/news/${n.id}/` : (n.data.link ?? `/news/#news-${n.id}`),
+      // Unique, stable GUID per item (the link alone can repeat or be missing).
+      customData: `<guid isPermaLink="false">${new URL(`/news/#news-${n.id}`, site)}</guid>`,
     })),
   });
 };

@@ -19,12 +19,12 @@ const elsewhere = [
 
 <footer class="site-footer">
   <div class="container footer-grid">
-    <section aria-labelledby="footer-contact">
+    <section>
       <h2 id="footer-contact">Contact</h2>
       <p><a href={`mailto:${p.email}`}>{p.email}</a></p>
       <p>{p.institute.name}, {p.city}</p>
     </section>
-    <section aria-labelledby="footer-elsewhere">
+    <section>
       <h2 id="footer-elsewhere">Elsewhere</h2>
       <ul>
         {
@@ -36,7 +36,7 @@ const elsewhere = [
         }
       </ul>
     </section>
-    <section aria-labelledby="footer-colophon">
+    <section>
       <h2 id="footer-colophon">Colophon</h2>
       <Woodpile />
       <p style="margin-top: var(--space-xs)">Set in Newsreader and IBM Plex Sans. Built with Astro.</p>

@@ -1,6 +1,7 @@
 // Shared helpers for scripts/add-publication.mjs and scripts/sync-orcid.mjs.
 // No dependencies: Node 22+ (global fetch) only.
 import { readdir, readFile, writeFile } from 'node:fs/promises';
+import YAML from 'yaml';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
@@ -22,19 +23,21 @@ const normTitle = (t) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
-/** DOIs and normalised titles already in src/content/publications. */
+/** DOIs and normalised titles (with file and status) already in src/content/publications. */
 export async function existingPublications() {
   const dois = new Set();
-  const titles = new Set();
+  const titles = new Map();
   for (const f of await readdir(PUB_DIR)) {
     if (!/\.ya?ml$/.test(f)) continue;
     const text = await readFile(path.join(PUB_DIR, f), 'utf8');
     const doi = text.match(/^doi:\s*['"]?([^'"\n]+)/m)?.[1];
     if (doi) dois.add(normalizeDoi(doi));
-    const title = text.match(/^title:\s*(?:>-?\s*\n((?:\s+.+\n)+)|['"]?(.+?)['"]?\s*$)/m);
-    if (title) titles.add(normTitle((title[1] ?? title[2]).replace(/\s+/g, ' ')));
+    // Include indented continuation lines: Pages CMS folds long titles at 80 columns.
+    const title = text.match(/^title:[ \t]*(.*(?:\n[ \t]+\S.*)*)/m)?.[1];
+    const status = text.match(/^status:\s*['"]?([\w-]+)/m)?.[1] ?? 'published';
+    if (title) titles.set(normTitle(title.replace(/^[>|][-+]?/, '')), { file: f, status });
   }
-  return { dois, titles, hasTitle: (t) => titles.has(normTitle(t)) };
+  return { dois, hasTitle: (t) => titles.has(normTitle(t)), byTitle: (t) => titles.get(normTitle(t)) };
 }
 
 async function getJson(url, headers = {}) {
@@ -107,18 +110,21 @@ export async function lookupDoi(rawDoi) {
     return {
       supported: ['JournalArticle', 'Preprint', 'ConferencePaper', 'Text', 'Dissertation'].includes(kind),
       sourceType: `datacite:${kind}`,
-      title: a.titles?.[0]?.title ?? '',
-      authors: (a.creators ?? []).map((c) =>
-        c.givenName ? (/\s/.test(c.familyName ?? '') ? `${c.familyName}, ${c.givenName}` : `${c.givenName} ${c.familyName}`) : c.name,
-      ),
+      title: stripTags(a.titles?.[0]?.title),
+      authors: (a.creators ?? [])
+        .map((c) =>
+          c.givenName ? (/\s/.test(c.familyName ?? '') ? `${c.familyName}, ${c.givenName}` : `${c.givenName} ${c.familyName}`) : c.name,
+        )
+        .map(stripTags)
+        .filter(Boolean),
       year: Number(a.publicationYear),
       date: a.dates?.find((d) => d.dateType === 'Issued')?.date?.slice(0, 10),
       type: kind === 'Preprint' ? 'preprint' : kind === 'Dissertation' ? 'thesis' : 'article',
       status: kind === 'Preprint' ? 'preprint' : 'published',
-      venue: a.container?.title ?? a.publisher?.name ?? a.publisher,
+      venue: stripTags(a.container?.title ?? a.publisher?.name ?? a.publisher),
       doi,
       url: a.url,
-      abstract: a.descriptions?.find((d) => d.descriptionType === 'Abstract')?.description,
+      abstract: stripTags(a.descriptions?.find((d) => d.descriptionType === 'Abstract')?.description) || undefined,
     };
   }
   return null;
@@ -134,7 +140,9 @@ const slug = (s) =>
     .replace(/^-|-$/g, '');
 
 export function fileNameFor(pub) {
-  const family = slug(pub.authors[0]?.split(/\s+/).at(-1) ?? 'unknown');
+  // Same "Given Family" / "Family, Given" rules as src/lib/authors.ts.
+  const first = String(pub.authors[0] ?? '').replace(/[*†]/g, '').trim();
+  const family = slug(first.includes(',') ? first.split(',')[0] : (first.split(/\s+/).at(-1) ?? '')) || 'unknown';
   const words = slug(pub.title)
     .split('-')
     .filter((w) => w && !STOP.has(w))
@@ -149,21 +157,34 @@ export function fileNameFor(pub) {
 // YAML is a superset of JSON, so JSON-quoted scalars are always valid YAML.
 const q = (v) => JSON.stringify(String(v));
 
-export function toYaml(pub, { selected = false } = {}) {
+const list = (key, items) => (items?.length ? [`${key}:`, ...items.map((t) => `  - ${q(t)}`)] : [`${key}: []`]);
+
+/** `keep` carries the owner's own fields (topics, links, …) over from an entry being replaced. */
+export function toYaml(pub, { selected = false, keep = {} } = {}) {
   const lines = [`title: ${q(pub.title)}`, 'authors:', ...pub.authors.map((a) => `  - ${q(a)}`), `year: ${pub.year}`];
   if (pub.date) lines.push(`date: ${q(pub.date)}`);
-  lines.push(`type: ${pub.type}`, `status: ${pub.status}`);
+  lines.push(`type: ${keep.type === 'review' ? 'review' : pub.type}`, `status: ${pub.status}`);
   for (const key of ['venue', 'volume', 'issue', 'pages', 'doi', 'url']) if (pub[key]) lines.push(`${key}: ${q(pub[key])}`);
-  if (pub.abstract) lines.push(`abstract: ${q(pub.abstract)}`);
-  lines.push(`selected: ${selected}`, 'topics: []', 'projects: []');
+  for (const key of ['pdf', 'code', 'data', 'app']) if (keep[key]) lines.push(`${key}: ${q(keep[key])}`);
+  if (pub.abstract ?? keep.abstract) lines.push(`abstract: ${q(pub.abstract ?? keep.abstract)}`);
+  lines.push(`selected: ${Boolean(selected || keep.selected)}`, ...list('topics', keep.topics), ...list('projects', keep.projects));
   return lines.join('\n') + '\n';
 }
 
-export async function writePublication(pub, opts) {
-  const file = fileNameFor(pub);
-  await writeFile(path.join(PUB_DIR, file), toYaml(pub, opts));
+/**
+ * Writes a new entry, or, with `replace` (the file name of a preprint / under-review entry with
+ * the same title), overwrites that file in place so its id, topics, projects and links survive.
+ */
+export async function writePublication(pub, { selected = false, replace } = {}) {
+  let keep = {};
+  if (replace) keep = YAML.parse(await readFile(path.join(PUB_DIR, replace), 'utf8')) ?? {};
+  const file = replace ?? fileNameFor(pub);
+  await writeFile(path.join(PUB_DIR, file), toYaml(pub, { selected, keep }));
   return path.join('src/content/publications', file);
 }
+
+/** True when `match` (from byTitle) is an earlier version that this published record should replace. */
+export const isUpgrade = (match, pub) => Boolean(match && ['preprint', 'under-review'].includes(match.status) && pub.status !== 'preprint');
 
 /** ORCID iD from src/content/profile/profile.md. */
 export async function orcidFromProfile() {

@@ -14,25 +14,29 @@ All content is plain Markdown and YAML in [`src/content/`](src/content). Every c
 
 | You want to…                         | In Pages CMS                                                                 |
 | ------------------------------------ | ---------------------------------------------------------------------------- |
-| Add a new paper                      | **Publications → Add by DOI**, paste the DOI, run. The entry appears in ~1 min. |
+| Add a new paper                      | **Publications → Add by DOI**, paste the DOI, run. The entry appears in ~1 min. If the paper is already listed as *under review* or *preprint*, that entry is updated in place. |
 | Feature a paper on the home page     | Publications → open it → tick **Show on the home page**                      |
 | Post a news item                     | **News & posts → Add**: date, one or two sentences, optional link            |
 | Write a longer post                  | News & posts → Add, fill in **Post title** and **Post text**                 |
 | Change bio, photo, links, "Now" line | **Profile & home page**                                                      |
 | Update the CV                        | **CV**. The PDF at `/files/saeed-rafieyan-cv.pdf` is rebuilt automatically.  |
 | Add a project                        | **Projects → Add**. Leave *Project page text* empty for no separate page.    |
-| Upload an image or PDF               | Use the image/file fields; uploads go to `public/uploads` and `public/files` |
+| Upload an image or PDF               | Use the image/file fields; uploads go to `public/uploads` and `public/files`. Resized WebP copies are made at build time. |
 
 New papers are also checked automatically: every Monday a GitHub Action compares your
 [ORCID record](https://orcid.org/0000-0002-3018-3683) with the site and opens a pull request
 with anything missing. Merge it to publish (you can also trigger it from Pages CMS: **Check ORCID for new papers**).
+While that pull request is open, later checks add to it without touching your edits.
+
+*Add by DOI* only accepts papers. Models, datasets and software (e.g. Hugging Face or Zenodo DOIs)
+go under **Projects**.
 
 ### From your computer
 
 ```bash
 npm install          # once
 npm run dev          # preview at http://localhost:4321
-npm run add:doi -- 10.1088/1758-5090/aeb162   # add a paper from its DOI
+npm run add:doi -- 10.1088/1758-5090/aeb162   # add a paper from its DOI (--force to skip the checks)
 npm run sync:orcid   # import anything on ORCID that's not on the site yet
 npm run cv:pdf       # rebuild public/files/saeed-rafieyan-cv.pdf (needs Chrome)
 npm run build        # check everything before pushing
@@ -58,6 +62,12 @@ src/styles/global.css              all design tokens and styles
 - **Topics**: tags such as `scaffold-ml` link papers to the *Research focus* items on the home page
   and to the topic filter on the Publications page.
 - **Dates**: `YYYY-MM-DD` or `YYYY-MM`.
+- **Photos**: phone photos can carry the GPS location where they were taken. The site only serves
+  stripped copies, but the original file stays in the (public) repository, so turn location off
+  before uploading (iPhone: *Options → Location* off when sharing; Mac Photos: *Export → Remove
+  location info*) or upload a screenshot.
+- **CV PDF**: rebuilt automatically from the CV page after every CV or publication change. Never
+  upload a PDF containing your phone number or referees' details: everything here is public.
 
 ### Safety net
 
@@ -69,9 +79,12 @@ more than four months old.
 
 ## One-time setup
 
-1. **GitHub**: push this folder to a new repository (e.g. `saeedrafieyan/rafieyan.xyz`).
-   Settings → Actions → General → Workflow permissions → *Read and write* and tick
-   *Allow GitHub Actions to create and approve pull requests* (for the ORCID check).
+1. **GitHub**: push this folder to a new **public** repository (e.g. `saeedrafieyan/rafieyan.xyz`).
+   On Vercel's free Hobby plan, commits made by GitHub Actions (Add by DOI, CV PDF rebuild) are
+   only deployed from public repositories, and everything in it is published on the site anyway.
+   Settings → Actions → General → Workflow permissions: leave *Read repository contents* selected
+   and tick *Allow GitHub Actions to create and approve pull requests* (for the ORCID check).
+   Each workflow asks for the write access it needs.
 2. **Vercel**: Add New → Project → import the repository. Framework preset *Astro* is detected;
    no settings or environment variables are needed.
 3. **Domain** (Vercel → Project → Settings → Domains): add `rafieyan.xyz` and `www.rafieyan.xyz`
@@ -79,7 +92,20 @@ more than four months old.
    (an `A` record for `@`, a `CNAME` for `www`) with the proxy **off** (grey cloud, *DNS only*).
 4. **Pages CMS**: open https://app.pagescms.org, sign in with GitHub and install the Pages CMS app
    on **this repository only**.
-5. **Old domain**: in Cloudflare for `sraf.ir`, add a Redirect Rule (301) from `sraf.ir/*` and
-   `www.sraf.ir/*` to `https://rafieyan.xyz/${1}`. Old links such as `/publications/`, `/cv/`,
-   `/blog/` and the old PDF paths keep working. Then update the website link on ORCID, GitHub and
-   Google Scholar.
+5. **Old domain**: in Cloudflare, zone `sraf.ir` → Rules → Redirect Rules → Create rule:
+   - *Custom filter expression*: `(http.host in {"sraf.ir" "www.sraf.ir"})`
+   - *Then*: URL redirect, **Dynamic**, expression `concat("https://rafieyan.xyz", http.request.uri.path)`,
+     status **301**, *Preserve query string* on.
+
+   Check it with `curl -I https://sraf.ir/cv/` (expect `301` to `https://rafieyan.xyz/cv/`). Old links
+   such as `/publications/`, `/cv/`, `/blog/` and the old PDF paths keep working.
+6. **Take the old site down**: the old CV PDFs contain your phone numbers and your referees' emails
+   and phone numbers, and they are still public in the old repository. Once the redirect works,
+   open github.com/saeedrafieyan/saeedrafieyan.github.io → Settings → *Danger zone* and make the
+   repository **private** (or delete it). Deleting the files in a new commit is not enough: every old
+   version stays reachable on raw.githubusercontent.com. sraf.ir keeps redirecting because
+   Cloudflare answers it. Optionally ask the Internet Archive (info@archive.org) to remove the
+   snapshot of `https://sraf.ir/assets/pdf/CV%20-%20Saeed%20Rafieyan.pdf`, and use Google Search
+   Console → Removals if the old PDFs appear in search results.
+7. **Update links elsewhere**: set the website to https://rafieyan.xyz on ORCID, GitHub and Google
+   Scholar.

@@ -4,15 +4,15 @@ status: active
 tier: featured
 order: 1
 years:
-  start: 2023
+  start: 2022
 summary: >-
-  Machine Learning Applications in Tissue Engineering: open models and data that
-  predict how a scaffold will print and how cells will respond to it, rank
+  Machine Learning Applications in Tissue Engineering: publicly available models
+  and data that predict how a scaffold will print and how cells will respond to it, rank
   candidate formulations, and suggest what to fabricate next.
 facts: Python · 2,646 scaffold samples · 130 biomaterials · 186 cell lines · 18 tissue contexts
 role: Lead developer
 methods: Gradient boosting, deep and tabular foundation models, Bayesian optimisation, LLM-assisted protocol generation
-data: Literature-derived scaffold dataset, released openly with the code
+data: Literature-derived scaffold dataset, published with the code
 links:
   code: https://github.com/saeedrafieyan/MLATE
   app: https://mlate.ir
@@ -31,11 +31,11 @@ versions:
     publication: 2024-rafieyan-practical-machine
   - version: V3
     year: 2026
-    scope: Multi-tissue; WSSQ ranking, Bayesian optimisation and an open web app
+    scope: Multi-tissue; WSSQ ranking, Bayesian optimisation and a public web app
     publication: 2026-rafieyan-mlate-v3
 ---
 
-Designing a tissue-engineering scaffold means choosing biomaterials and their concentrations, cell types and densities, and printing conditions, then running experiments to see what works. Most of that search is still trial and error. MLATE turns the published literature into structured, open datasets and trains models that predict the outcome from variables known **before** fabrication.
+Designing a tissue-engineering scaffold means choosing biomaterials and their concentrations, cell types and densities, and printing conditions, then running experiments to see what works. Most of that search is still trial and error. MLATE turns the published literature into structured datasets and trains models that predict the outcome from variables known **before** fabrication.
 
 ## What it does
 

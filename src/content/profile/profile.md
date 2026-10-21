@@ -12,12 +12,12 @@ group:
   name: Digital Manufacturing of Biomimetic Systems group
   url: https://ichf.edu.pl/en/groups/digital-manufacturing-of-biomimetic-systems
 standfirst: >-
-  I build machine-learning models and open datasets that predict how
+  I build machine-learning models and datasets that predict how
   tissue-engineering scaffolds will print and how cells will respond to them,
   before anything is fabricated.
 description: >-
   Saeed Rafieyan is a biomedical engineer and machine-learning researcher at the
-  Institute of Physical Chemistry, Polish Academy of Sciences, building open AI
+  Institute of Physical Chemistry, Polish Academy of Sciences, building AI
   tools such as MLATE for tissue engineering and biofabrication.
 now:
   text: MLATE V3 is out in Biofabrication. Open to collaborations on machine learning for biofabrication.
@@ -35,7 +35,7 @@ profiles:
 portrait:
   image: /uploads/portrait.jpg
   alt: Portrait of Saeed Rafieyan
-cv_pdf: /files/saeed-rafieyan-cv.pdf
+cv_pdf: ''
 focus:
   - term: Machine learning for scaffold design
     description: >-
@@ -53,10 +53,11 @@ focus:
       Domain-specific models such as TissueGPT, trained on tissue-engineering
       papers to support literature mining and scientific writing.
     topic: nlp
-  - term: Machine learning for chemical and bioprocess engineering
+  - term: Chemical and bioprocess engineering
     description: >-
-      Data-driven modelling and Bayesian optimisation of biorefinery and
-      separation processes, with collaborators at Jiangnan University.
+      Machine learning and Bayesian optimisation for biorefinery processes, with
+      collaborators at Jiangnan University, building on earlier work in process
+      simulation and biofuel separation.
     topic: process-ml
 also_exploring:
   - protein design with AI

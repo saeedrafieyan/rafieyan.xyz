@@ -68,7 +68,10 @@
 }
 
 @media (prefers-contrast: more) {
-  :root {
+  /* Must out-rank the theme selectors above. */
+  :root,
+  :root[data-theme],
+  :root:not([data-theme='light']) {
     --color-text-muted: var(--color-text);
     --color-text-subtle: var(--color-text);
     --color-rule: var(--color-border);
@@ -117,6 +120,11 @@
   display: none !important;
 }
 
+/* Controls that need JavaScript; .js is set in <head> before first paint, so nothing shifts. */
+html:not(.js) .js-only {
+  display: none !important;
+}
+
 *,
 *::before,
 *::after {
@@ -136,6 +144,7 @@ body {
   font-size: var(--text-base);
   font-weight: var(--body-wght);
   line-height: 1.6;
+  overflow-wrap: break-word;
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -804,8 +813,13 @@ main {
   display: none;
 }
 
-.pub-authors details[open] summary {
+.pub-authors .less,
+.pub-authors details[open] .more {
   display: none;
+}
+
+.pub-authors details[open] .less {
+  display: inline;
 }
 
 .pub-venue {
@@ -841,6 +855,7 @@ main {
 
 .pub-links details[open] {
   flex-basis: 100%;
+  min-width: 0;
 }
 
 .pub-links summary {

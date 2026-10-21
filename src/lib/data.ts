@@ -71,11 +71,15 @@ export async function getPublications(): Promise<Publication[]> {
           `Check the spelling, or add the variant to alternate_names in the profile.`,
       );
     }
+    if (!e.data.venue && e.data.status !== 'under-review') {
+      warn(`Publication "${e.id}" has no journal / venue; add one in Publications → ${e.data.title.slice(0, 40)}…`);
+    }
     return {
       id: e.id,
       authors,
       firstAuthor: authors[0].isOwner,
-      sortKey: e.data.status === 'under-review' ? '9999' : partialKey(e.data.date, e.data.year),
+      // Year first, so numbering, list order and year groups agree even if the online date is earlier.
+      sortKey: e.data.status === 'under-review' ? '9999' : `${e.data.year}|${partialKey(e.data.date, e.data.year)}`,
       data: e.data,
     };
   });
@@ -100,7 +104,26 @@ export async function getPublications(): Promise<Publication[]> {
 
 export async function getProjects(): Promise<Project[]> {
   const tierRank = { featured: 0, standard: 1, minor: 2 };
-  return (await getCollection('projects')).sort(
+  const projects = await getCollection('projects');
+  const pubs = await getPublications();
+  const pubIds = new Set(pubs.map((p) => p.id));
+  const projectIds = new Set(projects.map((p) => p.id));
+  for (const p of projects) {
+    const missing = p.data.versions.filter((v) => v.publication && !pubIds.has(v.publication));
+    if (missing.length) {
+      throw new Error(
+        `Project "${p.id}": version ${missing.map((v) => v.version).join(', ')} points to a publication that does not exist ` +
+          `(${missing.map((v) => v.publication).join(', ')}). Use the publication's file name without .yaml.`,
+      );
+    }
+  }
+  for (const pub of pubs) {
+    const bad = pub.data.projects.filter((id) => !projectIds.has(id));
+    if (bad.length) {
+      throw new Error(`Publication "${pub.id}": project ${bad.join(', ')} does not exist. Use the project's file name without .md.`);
+    }
+  }
+  return projects.sort(
     (a, b) =>
       tierRank[a.data.tier] - tierRank[b.data.tier] ||
       a.data.order - b.data.order ||
@@ -122,8 +145,12 @@ export const newsIsPost = (n: NewsItem) => Boolean(n.data.title && n.body?.trim(
 export async function getCv() {
   const cv = await getEntry('cv', 'cv');
   if (!cv) throw new Error('src/content/cv/cv.yaml is missing.');
-  const [latestPub] = await getPublications();
-  const latestDate = latestPub?.data.date ?? String(latestPub?.data.year ?? '');
+  const latestDate =
+    (await getPublications())
+      .filter((p) => p.data.status !== 'under-review')
+      .map((p) => p.data.date ?? String(p.data.year))
+      .sort()
+      .at(-1) ?? '';
   if (latestDate && cv.data.updated.toISOString().slice(0, 10) < latestDate.slice(0, 10)) {
     warn(`The CV "updated" date is older than your newest publication (${latestDate}). Check the CV and bump the date.`);
   }

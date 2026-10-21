@@ -8,6 +8,7 @@ import FeaturedRow from '../components/FeaturedRow.astro';
 import NewsItem from '../components/NewsItem.astro';
 import { getNews, getProfile, getProjects, getPublications, topicCounts } from '../lib/data';
 import { formatPartial } from '../lib/dates';
+import { responsive } from '../lib/images';
 
 const profile = await getProfile();
 const p = profile.data;
@@ -15,9 +16,13 @@ const { Content } = await render(profile);
 const pubs = await getPublications();
 const selected = pubs.filter((x) => x.data.selected).slice(0, 5);
 const featured = (await getProjects()).filter((x) => x.data.tier === 'featured').slice(0, 2);
+// Number only figures that actually show a "Fig. N" caption, so numbering always starts at 1.
+let fig = 0;
+const figNos = featured.map((x) => (x.data.figure?.caption ? ++fig : undefined));
 const news = await getNews();
 const recent = news.slice(0, 5);
 const counts = await topicCounts();
+const portrait = p.portrait ? responsive(p.portrait.image) : undefined;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -42,10 +47,12 @@ const jsonLd = {
           <div class="margin">
             <figure class="portrait">
               <img
-                src={p.portrait.image}
+                src={portrait?.src ?? p.portrait.image}
+                srcset={portrait?.srcset}
+                sizes={portrait ? '(min-width: 60rem) 11rem, 5rem' : undefined}
+                width={portrait?.width}
+                height={portrait?.height}
                 alt={p.portrait.alt}
-                width="640"
-                height="800"
                 loading="eager"
                 fetchpriority="high"
                 decoding="async"
@@ -127,7 +134,7 @@ const jsonLd = {
           </h2>
           <div class="main">
             {featured.map((proj, i) => (
-              <FeaturedRow project={proj} figure={i + 1} />
+              <FeaturedRow project={proj} figure={figNos[i]} />
             ))}
           </div>
         </section>

@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { getNews, newsIsPost, type NewsItem } from '../../lib/data';
+import { displayUrl, getNews, newsIsPost, type NewsItem } from '../../lib/data';
 import { dayMonthYear, isoDay } from '../../lib/dates';
 
 export const getStaticPaths = (async () => {
@@ -27,7 +27,16 @@ const minutes = Math.max(1, Math.round(words / 200));
       </div>
     </header>
     <div class="with-margin">
-      <div class="main prose"><Content /></div>
+      <div class="main prose">
+        <Content />
+        {
+          d.link && (
+            <p>
+              Link: <a href={d.link}>{d.link_label ?? displayUrl(d.link)}</a>
+            </p>
+          )
+        }
+      </div>
     </div>
     <p class="with-margin section-foot no-print">
       <span class="main"><a href="/news/">← All news</a></span>

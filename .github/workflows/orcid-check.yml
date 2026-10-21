@@ -1,5 +1,6 @@
-# Weekly: look for papers on the ORCID record that are not on the site yet and
-# open a pull request with them (merge it to publish, or close it to skip).
+# Weekly: look for papers on the ORCID record that are not on the site yet and open a pull
+# request with them (merge it to publish, or close it to skip). While that pull request is
+# open, later runs add to it and never overwrite edits made on its branch.
 # One-time setting: Settings → Actions → General → Workflow permissions →
 # tick "Allow GitHub Actions to create and approve pull requests".
 name: Check ORCID for new publications
@@ -17,35 +18,61 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
+
+env:
+  BRANCH: orcid/new-publications
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Keep the weekly schedule alive
+        # GitHub pauses scheduled workflows in public repositories after 60 days without activity.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/orcid-check.yml/enable" || true
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
+      - run: npm ci
+      - name: Continue the open ORCID pull request, if any
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          echo "open=$open" >> "$GITHUB_OUTPUT"
+          if [ -n "$open" ]; then
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" FETCH_HEAD
+          else
+            git checkout -B "$BRANCH"
+          fi
       - name: Import new DOIs from ORCID
         id: sync
         run: node scripts/sync-orcid.mjs
       - name: Check the site still builds
         if: steps.sync.outputs.added != '0'
-        run: npm ci && npm run build
-      - name: Open a pull request
+        run: npm run build
+      - name: Open or update the pull request
         if: steps.sync.outputs.added != '0'
         env:
           GH_TOKEN: ${{ github.token }}
           SUMMARY: ${{ steps.sync.outputs.summary }}
+          OPEN: ${{ steps.pr.outputs.open }}
         run: |
-          branch="orcid/new-publications"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$branch"
           git add src/content/publications
           git commit -m "Add publications found on ORCID"
-          git push --force origin "$branch"
-          body=$(printf 'New on your ORCID record:\n\n%s\n\nCheck the authors, type and topics (Pages CMS: switch to this branch, or edit the files here), then merge to publish. Close the PR and add the DOI to `scripts/orcid-ignore.txt` to skip one for good.' "$SUMMARY")
-          gh pr view "$branch" >/dev/null 2>&1 \
-            && gh pr edit "$branch" --body "$body" \
-            || gh pr create --head "$branch" --title "New publications from ORCID" --body "$body"
+          body=$(printf 'New on your ORCID record:\n\n%s\n\nCheck the authors, type and topics (in Pages CMS switch to the `%s` branch, or edit the files here), then merge to publish. To skip a paper for good, close this PR and add its DOI to `scripts/orcid-ignore.txt`.' "$SUMMARY" "$BRANCH")
+          if [ -n "$OPEN" ]; then
+            git push origin "$BRANCH"                 # fast-forward: keeps any edits on the branch
+            gh pr comment "$OPEN" --body "$body"
+          else
+            git push --force origin "$BRANCH"         # replaces a branch left over from a closed/merged PR
+            gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" \
+              --title "New publications from ORCID" --body "$body"
+          fi
