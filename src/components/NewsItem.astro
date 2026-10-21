@@ -1,0 +1,39 @@
+---
+import type { NewsItem } from '../lib/data';
+import { newsIsPost } from '../lib/data';
+import { isoDay, monthYear } from '../lib/dates';
+
+interface Props {
+  item: NewsItem;
+  marginDates?: boolean;
+}
+const { item, marginDates = false } = Astro.props;
+const d = item.data;
+const isPost = newsIsPost(item);
+---
+
+<li class:list={['news-item', { 'with-margin': marginDates }]}>
+  <time class:list={['news-date', { margin: marginDates }]} datetime={isoDay(d.date)}>{monthYear(d.date)}</time>
+  <div class={marginDates ? 'main' : undefined}>
+    {
+      isPost ? (
+        <>
+          <h3 class="news-post-title">
+            <a href={`/news/${item.id}/`}>{d.title}</a>
+          </h3>
+          <p class="news-text muted">{d.description ?? d.text}</p>
+        </>
+      ) : (
+        <p class="news-text">
+          {d.text}
+          {d.link && (
+            <>
+              {' '}
+              <a href={d.link}>Read more</a>
+            </>
+          )}
+        </p>
+      )
+    }
+  </div>
+</li>

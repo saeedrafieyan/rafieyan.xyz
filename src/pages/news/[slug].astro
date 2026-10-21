@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getNews, newsIsPost, type NewsItem } from '../../lib/data';
+import { dayMonthYear, isoDay } from '../../lib/dates';
+
+export const getStaticPaths = (async () => {
+  const news = await getNews();
+  return news.filter(newsIsPost).map((item) => ({ params: { slug: item.id }, props: { item } }));
+}) satisfies GetStaticPaths;
+
+const { item } = Astro.props as { item: NewsItem };
+const d = item.data;
+const { Content } = await render(item);
+const words = (item.body ?? '').split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 200));
+---
+
+<Base title={d.title} description={d.description ?? d.text} type="article">
+  <article class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <p class="kicker"><time datetime={isoDay(d.date)}>{dayMonthYear(d.date)}</time> · {minutes} min read</p>
+        <h1 class="page-title">{d.title}</h1>
+        {d.description && <p class="standfirst">{d.description}</p>}
+      </div>
+    </header>
+    <div class="with-margin">
+      <div class="main prose"><Content /></div>
+    </div>
+    <p class="with-margin section-foot no-print">
+      <span class="main"><a href="/news/">← All news</a></span>
+    </p>
+  </article>
+</Base>

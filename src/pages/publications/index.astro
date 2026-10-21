@@ -1,0 +1,232 @@
+---
+import Base from '../../layouts/Base.astro';
+import PubItem from '../../components/PubItem.astro';
+import InlineList from '../../components/InlineList.astro';
+import { getProfile, getPublications, TYPE_LABELS } from '../../lib/data';
+
+const { data: profile } = await getProfile();
+const pubs = await getPublications();
+
+const underReview = pubs.filter((p) => p.data.status === 'under-review');
+const byYear = new Map<number, typeof pubs>();
+for (const p of pubs) {
+  if (p.data.status === 'under-review') continue;
+  byYear.set(p.data.year, [...(byYear.get(p.data.year) ?? []), p]);
+}
+const groups = [
+  ...(underReview.length ? [{ label: 'Under review', id: 'under-review', items: underReview }] : []),
+  ...[...byYear.entries()].map(([year, items]) => ({ label: String(year), id: `y${year}`, items })),
+];
+
+// Computed standfirst: "9 publications · 5 journal articles, 3 reviews, 1 conference paper"
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const typeCounts = new Map<string, number>();
+for (const p of pubs) if (p.data.status !== 'under-review') typeCounts.set(p.data.type, (typeCounts.get(p.data.type) ?? 0) + 1);
+const breakdown = [...typeCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .map(([t, n]) => plural(n, (TYPE_LABELS[t] ?? t).toLowerCase()))
+  .join(', ');
+const standfirst = [plural(pubs.length, 'publication'), breakdown, underReview.length ? `${underReview.length} under review` : '']
+  .filter(Boolean)
+  .join(' · ');
+
+const types = [...new Set(pubs.map((p) => (p.data.status === 'under-review' ? 'under-review' : p.data.type)))];
+const typeOrder = ['article', 'review', 'conference', 'chapter', 'preprint', 'thesis', 'under-review'];
+types.sort((a, b) => typeOrder.indexOf(a) - typeOrder.indexOf(b));
+const filterLabels: Record<string, string> = {
+  article: 'Articles',
+  review: 'Reviews',
+  conference: 'Conference',
+  chapter: 'Chapters',
+  preprint: 'Preprints',
+  thesis: 'Theses',
+  'under-review': 'Under review',
+};
+const years = [...new Set(pubs.map((p) => p.data.year))].sort((a, b) => b - a);
+const topicNames = new Map(profile.focus.filter((f) => f.topic).map((f) => [f.topic!, f.term]));
+const topics = [...new Set(pubs.flatMap((p) => p.data.topics))].filter((t) => topicNames.has(t));
+
+const jsonLd = pubs
+  .filter((p) => p.data.status !== 'under-review')
+  .map((p) => ({
+    '@context': 'https://schema.org',
+    '@type': p.data.type === 'thesis' ? 'Thesis' : 'ScholarlyArticle',
+    headline: p.data.title,
+    author: p.authors.map((a) => ({ '@type': 'Person', name: a.full })),
+    datePublished: p.data.date ?? String(p.data.year),
+    ...(p.data.venue && p.data.type !== 'thesis' ? { isPartOf: { '@type': 'Periodical', name: p.data.venue } } : {}),
+    ...(p.data.doi ? { sameAs: `https://doi.org/${p.data.doi}` } : {}),
+  }));
+---
+
+<Base title="Publications" description={`Publications by ${profile.name}: ${standfirst}.`} jsonLd={jsonLd}>
+  <div class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <h1 class="page-title">Publications</h1>
+        <p class="standfirst">{standfirst}</p>
+        <InlineList
+          class="meta-line"
+          label="Publication profiles"
+          links={[
+            { label: 'Google Scholar', href: profile.profiles.scholar },
+            { label: 'ORCID', href: profile.profiles.orcid },
+            { label: 'Scopus', href: profile.profiles.scopus },
+          ]}
+        />
+      </div>
+    </header>
+
+    <div>
+      {
+        pubs.length >= 6 && (
+          <div class="with-margin">
+            <fieldset class="filters main" data-filters hidden>
+              <legend class="visually-hidden">Filter publications</legend>
+              <div class="row">
+                <fieldset class="segmented">
+                  <legend class="visually-hidden">Type</legend>
+                  <input type="radio" name="type" id="type-all" value="" checked />
+                  <label for="type-all">All</label>
+                  {types.map((t) => (
+                    <>
+                      <input type="radio" name="type" id={`type-${t}`} value={t} />
+                      <label for={`type-${t}`}>{filterLabels[t] ?? t}</label>
+                    </>
+                  ))}
+                </fieldset>
+              </div>
+              <div class="row">
+                <label class="visually-hidden" for="filter-year">
+                  Year
+                </label>
+                <select id="filter-year" name="year">
+                  <option value="">All years</option>
+                  {years.map((y) => (
+                    <option value={y}>{y}</option>
+                  ))}
+                </select>
+                {topics.length >= 2 && (
+                  <>
+                    <label class="visually-hidden" for="filter-topic">
+                      Topic
+                    </label>
+                    <select id="filter-topic" name="topic">
+                      <option value="">All topics</option>
+                      {topics.map((t) => (
+                        <option value={t}>{topicNames.get(t)}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                <label class="check">
+                  <input type="checkbox" name="first" value="1" />
+                  First-author only
+                </label>
+              </div>
+              <div class="row">
+                <p class="filter-count" aria-live="polite" data-count>
+                  Showing {pubs.length} of {pubs.length}
+                </p>
+                <button type="button" class="text-button" data-reset>
+                  Reset
+                </button>
+              </div>
+            </fieldset>
+          </div>
+        )
+      }
+
+      <p class="with-margin" data-empty hidden>
+        <span class="main">No publications match these filters.</span>
+      </p>
+
+      {
+        groups.map((g) => (
+          <section class="pub-group with-margin" aria-labelledby={g.id} data-group>
+            <h2 class="pub-group-label margin" id={g.id}>
+              {g.label}
+            </h2>
+            <ol class="pub-list main" reversed>
+              {g.items.map((pub) => (
+                <PubItem pub={pub} />
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+
+      <p class="with-margin section-foot no-print">
+        <span class="main">
+          <a href="/publications.bib" download>
+            Download all as BibTeX (publications.bib)
+          </a>
+        </span>
+      </p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFieldSetElement>('[data-filters]');
+  if (form) {
+    form.hidden = false;
+    const items = [...document.querySelectorAll<HTMLLIElement>('.pub-item')];
+    const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
+    const count = form.querySelector<HTMLElement>('[data-count]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+    const yearSelect = form.querySelector<HTMLSelectElement>('#filter-year')!;
+    const topicSelect = form.querySelector<HTMLSelectElement>('#filter-topic');
+    const first = form.querySelector<HTMLInputElement>('input[name="first"]')!;
+
+    const state = () => ({
+      type: form.querySelector<HTMLInputElement>('input[name="type"]:checked')?.value ?? '',
+      year: yearSelect.value,
+      topic: topicSelect?.value ?? '',
+      first: first.checked ? '1' : '',
+    });
+
+    const apply = (push = true) => {
+      const s = state();
+      let shown = 0;
+      for (const li of items) {
+        const ok =
+          (!s.type || li.dataset.type === s.type) &&
+          (!s.year || li.dataset.year === s.year) &&
+          (!s.topic || (li.dataset.topics ?? '').split(' ').includes(s.topic)) &&
+          (!s.first || li.dataset.first === '1');
+        li.hidden = !ok;
+        if (ok) shown++;
+      }
+      for (const g of groups) g.hidden = !g.querySelector('.pub-item:not([hidden])');
+      count.textContent = `Showing ${shown} of ${items.length}`;
+      empty.hidden = shown > 0;
+      if (push) {
+        const params = new URLSearchParams(Object.entries(s).filter(([, v]) => v));
+        const qs = params.toString();
+        history.replaceState(null, '', qs ? `?${qs}` : location.pathname + location.hash);
+      }
+    };
+
+    // Restore from URL (?type=review&year=2024&topic=scaffold-ml&first=1)
+    const params = new URLSearchParams(location.search);
+    const type = params.get('type');
+    if (type) {
+      const radio = form.querySelector<HTMLInputElement>(`input[name="type"][value="${CSS.escape(type)}"]`);
+      if (radio) radio.checked = true;
+    }
+    if (params.get('year')) yearSelect.value = params.get('year')!;
+    if (topicSelect && params.get('topic')) topicSelect.value = params.get('topic')!;
+    first.checked = params.get('first') === '1';
+    apply(false);
+
+    form.addEventListener('change', () => apply());
+    form.querySelector('[data-reset]')?.addEventListener('click', () => {
+      form.querySelector<HTMLInputElement>('#type-all')!.checked = true;
+      yearSelect.value = '';
+      if (topicSelect) topicSelect.value = '';
+      first.checked = false;
+      apply();
+    });
+  }
+</script>

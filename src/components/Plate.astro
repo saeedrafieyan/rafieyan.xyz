@@ -1,0 +1,24 @@
+---
+interface Props {
+  image: string;
+  alt: string;
+  caption?: string;
+  figure?: number;
+  eager?: boolean;
+}
+const { image, alt, caption, figure, eager = false } = Astro.props;
+---
+
+<figure class="plate">
+  <div class="plate-box">
+    <img src={image} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  </div>
+  {
+    caption && (
+      <figcaption>
+        {figure && <b>Fig. {figure}. </b>}
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

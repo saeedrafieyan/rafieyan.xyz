@@ -1,0 +1,23 @@
+title: "MLATE V3: An Open-Source Multi-Tissue AI Framework for Data-Driven Optimization of 3D-Printed and Bioprinted Scaffolds"
+authors:
+  - "Saeed Rafieyan"
+  - "Partovi Nasr, Minoo"
+  - "Elham Ansari"
+  - "Kheradvar Kolour, Alireza"
+  - "Behnaz Banimohamad-Shotorbani"
+  - "Ebrahim Vasheghani-Farahani"
+year: 2026
+date: "2026-10-07"
+type: article
+status: in-press
+venue: "Biofabrication"
+doi: "10.1088/1758-5090/aeb162"
+url: "https://iopscience.iop.org/article/10.1088/1758-5090/aeb162"
+code: "https://github.com/saeedrafieyan/MLATE"
+app: "https://mlate.ir"
+abstract: "3D (bio)printing is increasingly used for scaffold fabrication in tissue engineering; however, identifying suitable biomaterial compositions, cell types, cell densities, and printing conditions remains largely empirical, time-consuming, and costly. Practical application of machine learning in this field is further limited by the scarcity of comprehensive datasets based on pre-fabrication variables, the lack of integrated frameworks for prioritizing candidate scaffold formulations, and the limited availability of accessible tools for non-technical users. To address these challenges, we developed MLATE V3 (Machine Learning Applications in Tissue Engineering V3), an open-source, data-driven, multi-tissue framework for scaffold prediction, prioritization, and experimental planning. An open-source dataset comprising 2,646 samples, 130 biomaterials, and 186 cell lines, including co-culture systems, across 18 tissue engineering contexts was compiled and used to benchmark machine learning, deep learning, tabular transformer-based, and tabular foundation models for predicting cell response and printability from pre-fabrication variables. The best-performing models achieved weighted F1-scores of 0.773 for cell response and 0.806 for printability. These predictive outputs were subsequently integrated through the Weighted Synergistic Scaffold Quality (WSSQ) metric, which combines cell response and printability using adjustable weights to provide a unified criterion for candidate ranking. WSSQ was then incorporated into a Bayesian optimization framework to search user-defined biomaterial compositions and printing-parameter ranges and prioritize candidate scaffold formulations for experimental evaluation. To make the complete workflow accessible to researchers, MLATE V3 was implemented as an open-source web platform that enables users to select predictive models, define design spaces, perform WSSQ-based optimization, and generate step-by-step fabrication protocols through an LLM-assisted procedure-generation module. Overall, MLATE V3 provides an extensible decision-support framework that connects literature-derived data, predictive modeling, multi-objective scaffold ranking, optimization, and experimental planning. The platform is intended to narrow the experimental search space and generate candidate formulations for subsequent experimental validation rather than to serve as experimentally validated optimizer."
+selected: true
+topics:
+  - scaffold-ml
+projects:
+  - mlate

@@ -1,0 +1,45 @@
+---
+import Base from '../../layouts/Base.astro';
+import NewsItem from '../../components/NewsItem.astro';
+import { getNews } from '../../lib/data';
+
+const news = await getNews();
+const years = new Map<number, typeof news>();
+for (const n of news) {
+  const y = n.data.date.getUTCFullYear();
+  years.set(y, [...(years.get(y) ?? []), n]);
+}
+---
+
+<Base title="News" description="Papers, releases and other news.">
+  <div class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <h1 class="page-title">News</h1>
+        <p class="standfirst">Papers, software releases and other updates. Also available as an <a href="/rss.xml">RSS feed</a>.</p>
+      </div>
+    </header>
+    {
+      news.length === 0 ? (
+        <p class="with-margin">
+          <span class="main">
+            Nothing posted yet. Recent work is on the <a href="/publications/">Publications</a> page.
+          </span>
+        </p>
+      ) : (
+        [...years.entries()].map(([year, items]) => (
+          <section class="with-margin" aria-labelledby={`y${year}`}>
+            <h2 class="pub-group-label margin" id={`y${year}`}>
+              {year}
+            </h2>
+            <ul class="news-list main">
+              {items.map((n) => (
+                <NewsItem item={n} />
+              ))}
+            </ul>
+          </section>
+        ))
+      )
+    }
+  </div>
+</Base>

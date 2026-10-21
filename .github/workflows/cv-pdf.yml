@@ -1,0 +1,48 @@
+# Rebuild public/files/saeed-rafieyan-cv.pdf by printing the /cv/ page with
+# headless Chrome, whenever the CV, publications, projects or profile change.
+name: Rebuild CV PDF
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/cv/**'
+      - 'src/content/publications/**'
+      - 'src/content/projects/**'
+      - 'src/content/profile/**'
+      - 'src/pages/cv/**'
+      - 'src/styles/**'
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: Filled in by Pages CMS (leave empty)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: content-writes
+  cancel-in-progress: false
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Print /cv/ to PDF
+        run: npm run cv:pdf
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/files/saeed-rafieyan-cv.pdf
+          if git diff --cached --quiet; then echo "PDF unchanged."; exit 0; fi
+          git commit -m "Rebuild CV PDF"
+          git pull --rebase
+          git push

@@ -1,0 +1,3 @@
+# DOIs on the ORCID record that should never be imported as publications (one per line).
+10.5281/zenodo.7221024  # Zenodo copy of the 2022 Polymers review
+10.5281/zenodo.7221025  # Zenodo concept DOI of the same copy

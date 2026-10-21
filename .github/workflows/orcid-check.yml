@@ -1,0 +1,51 @@
+# Weekly: look for papers on the ORCID record that are not on the site yet and
+# open a pull request with them (merge it to publish, or close it to skip).
+# One-time setting: Settings → Actions → General → Workflow permissions →
+# tick "Allow GitHub Actions to create and approve pull requests".
+name: Check ORCID for new publications
+
+on:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: Filled in by Pages CMS (leave empty)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Import new DOIs from ORCID
+        id: sync
+        run: node scripts/sync-orcid.mjs
+      - name: Check the site still builds
+        if: steps.sync.outputs.added != '0'
+        run: npm ci && npm run build
+      - name: Open a pull request
+        if: steps.sync.outputs.added != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUMMARY: ${{ steps.sync.outputs.summary }}
+        run: |
+          branch="orcid/new-publications"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add src/content/publications
+          git commit -m "Add publications found on ORCID"
+          git push --force origin "$branch"
+          body=$(printf 'New on your ORCID record:\n\n%s\n\nCheck the authors, type and topics (Pages CMS: switch to this branch, or edit the files here), then merge to publish. Close the PR and add the DOI to `scripts/orcid-ignore.txt` to skip one for good.' "$SUMMARY")
+          gh pr view "$branch" >/dev/null 2>&1 \
+            && gh pr edit "$branch" --body "$body" \
+            || gh pr create --head "$branch" --title "New publications from ORCID" --body "$body"

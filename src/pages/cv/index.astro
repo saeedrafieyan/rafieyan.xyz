@@ -1,0 +1,330 @@
+---
+import { existsSync, statSync } from 'node:fs';
+import path from 'node:path';
+import Base from '../../layouts/Base.astro';
+import CvEntry from '../../components/CvEntry.astro';
+import PubItem from '../../components/PubItem.astro';
+import InlineList from '../../components/InlineList.astro';
+import { displayUrl, getCv, getProfile, getProjects, getPublications } from '../../lib/data';
+import { dayMonthYear, isoDay } from '../../lib/dates';
+
+const { data: p } = await getProfile();
+const { data: cv } = await getCv();
+const pubs = await getPublications();
+const published = pubs.filter((x) => x.data.status !== 'under-review');
+const underReview = pubs.filter((x) => x.data.status === 'under-review');
+const software = (await getProjects()).filter((x) => x.data.tier !== 'minor');
+
+let pdfSize: string | undefined;
+if (p.cv_pdf?.startsWith('/')) {
+  const file = path.join(process.cwd(), 'public', p.cv_pdf);
+  if (existsSync(file)) pdfSize = `${Math.max(1, Math.round(statSync(file).size / 1024))} KB`;
+}
+const site = Astro.site ? displayUrl(Astro.site.href) : 'rafieyan.xyz';
+
+const sections = [
+  { id: 'education', label: 'Education', show: cv.education.length > 0 },
+  { id: 'research', label: 'Research experience', show: cv.research.length > 0 },
+  { id: 'industry', label: 'Industry', show: cv.industry.length > 0 },
+  { id: 'publications', label: 'Publications', show: pubs.length > 0 },
+  { id: 'software', label: 'Software', show: software.length > 0 },
+  { id: 'talks', label: 'Talks', show: cv.talks.length > 0 },
+  { id: 'awards', label: 'Awards', show: cv.awards.length > 0 },
+  { id: 'service', label: 'Service', show: cv.service.length > 0 },
+  { id: 'teaching', label: 'Teaching', show: cv.teaching.length > 0 },
+  { id: 'skills', label: 'Skills', show: cv.skills.length > 0 },
+  { id: 'languages', label: 'Languages', show: cv.languages.length > 0 },
+].filter((s) => s.show);
+---
+
+<Base title="CV" description={`Curriculum vitae of ${p.name}, ${p.role} at ${p.institute.name}.`}>
+  <div class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <p class="kicker">Curriculum vitae</p>
+        <h1 class="page-title">{p.name}</h1>
+        <p class="meta-line">
+          {p.role}, {p.group ? `${p.group.name}, ` : ''}{p.institute.name}, {p.city}
+          <br />
+          <a href={`mailto:${p.email}`}>{p.email}</a> · <a href={Astro.site?.href}>{site}</a>
+          {p.profiles.orcid && (
+            <>
+              {' · '}
+              <a href={p.profiles.orcid}>ORCID {p.profiles.orcid.split('/').at(-1)}</a>
+            </>
+          )}
+        </p>
+        <p class="meta-line">Updated <time datetime={isoDay(cv.updated)}>{dayMonthYear(cv.updated)}</time></p>
+        <div class="action-row no-print">
+          {
+            p.cv_pdf && (
+              <a class="btn btn-primary" href={p.cv_pdf} download>
+                Download CV (PDF{pdfSize && `, ${pdfSize}`})
+              </a>
+            )
+          }
+          <button type="button" class="btn" data-print hidden>Print</button>
+        </div>
+        <InlineList
+          class="jump-list no-print"
+          label="Sections"
+          links={sections.map((s) => ({ label: s.label, href: `#${s.id}` }))}
+        />
+      </div>
+    </header>
+
+    {
+      cv.education.length > 0 && (
+        <section class="with-margin" aria-labelledby="education">
+          <h2 class="section-head margin" id="education">
+            Education
+          </h2>
+          <ol class="cv-list main">
+            {cv.education.map((e) => (
+              <CvEntry entry={e} />
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      cv.research.length > 0 && (
+        <section class="with-margin" aria-labelledby="research">
+          <h2 class="section-head margin" id="research">
+            Research experience
+          </h2>
+          <ol class="cv-list main">
+            {cv.research.map((e) => (
+              <CvEntry entry={e} />
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      cv.industry.length > 0 && (
+        <section class="with-margin" aria-labelledby="industry">
+          <h2 class="section-head margin" id="industry">
+            Industry experience
+          </h2>
+          <ol class="cv-list main">
+            {cv.industry.map((e) => (
+              <CvEntry entry={e} />
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      pubs.length > 0 && (
+        <section class="with-margin" aria-labelledby="publications">
+          <h2 class="section-head margin" id="publications">
+            Publications
+          </h2>
+          <div class="main">
+            <ol class="pub-list" reversed>
+              {published.map((pub) => (
+                <PubItem pub={pub} mode="compact" numbered showDoi />
+              ))}
+            </ol>
+            {underReview.length > 0 && (
+              <>
+                <h3 class="kicker" style="margin-top: var(--space-m)">
+                  Under review
+                </h3>
+                <ul class="pub-list">
+                  {underReview.map((pub) => (
+                    <PubItem pub={pub} mode="compact" headingLevel="h4" />
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      software.length > 0 && (
+        <section class="with-margin" aria-labelledby="software">
+          <h2 class="section-head margin" id="software">
+            Software and data
+          </h2>
+          <ul class="cv-plain main">
+            {software.map((s) => {
+              const link = s.data.links.app ?? s.data.links.code ?? s.data.links.model;
+              return (
+                <li>
+                  <b>{link ? <a href={link}>{s.data.title}</a> : s.data.title}</b>
+                  {s.data.links.doi && <span class="muted"> (doi:{s.data.links.doi})</span>}
+                  {' — '}
+                  {s.data.summary}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.talks.length > 0 && (
+        <section class="with-margin" aria-labelledby="talks">
+          <h2 class="section-head margin" id="talks">
+            Talks and posters
+          </h2>
+          <ul class="cv-plain main">
+            {cv.talks.map((t) => (
+              <li>
+                <i>{t.url ? <a href={t.url}>{t.title}</a> : t.title}</i>. {t.event}
+                {t.place && `, ${t.place}`}, {t.date.slice(0, 4)}.
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.awards.length > 0 && (
+        <section class="with-margin" aria-labelledby="awards">
+          <h2 class="section-head margin" id="awards">
+            Awards
+          </h2>
+          <ul class="cv-plain main">
+            {cv.awards.map((a) => (
+              <li>
+                {a.year && <span class="tabular muted">{a.year} · </span>}
+                {a.text}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.service.length > 0 && (
+        <section class="with-margin" aria-labelledby="service">
+          <h2 class="section-head margin" id="service">
+            Service
+          </h2>
+          <ul class="cv-plain main">
+            {cv.service.map((s) => (
+              <li>{s}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.teaching.length > 0 && (
+        <section class="with-margin" aria-labelledby="teaching">
+          <h2 class="section-head margin" id="teaching">
+            Teaching
+          </h2>
+          <ul class="cv-plain main">
+            {cv.teaching.map((s) => (
+              <li>{s}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.skills.length > 0 && (
+        <section class="with-margin" aria-labelledby="skills">
+          <h2 class="section-head margin" id="skills">
+            Skills
+          </h2>
+          <dl class="skills-list main">
+            {cv.skills.map((s) => (
+              <div>
+                <dt>{s.group}</dt>
+                <dd>{s.items}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )
+    }
+
+    {
+      cv.languages.length > 0 && (
+        <section class="with-margin" aria-labelledby="languages">
+          <h2 class="section-head margin" id="languages">
+            Languages
+          </h2>
+          <ul class="cv-plain main">
+            {cv.languages.map((l) => (
+              <li>
+                <b>{l.language}</b> · {l.level}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.memberships.length > 0 && (
+        <section class="with-margin" aria-labelledby="memberships">
+          <h2 class="section-head margin" id="memberships">
+            Memberships
+          </h2>
+          <ul class="cv-plain main">
+            {cv.memberships.map((m) => (
+              <li>{m}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      cv.training.length > 0 && (
+        <section class="with-margin training" aria-labelledby="training">
+          <h2 class="section-head margin" id="training">
+            Additional training
+          </h2>
+          <details class="main">
+            <summary>Show {cv.training.length} certificates</summary>
+            <ul class="cv-plain">
+              {cv.training.map((t) => (
+                <li>
+                  {t.url ? <a href={t.url}>{t.name}</a> : t.name}
+                  <span class="muted">
+                    {t.issuer && ` · ${t.issuer}`}
+                    {t.year && ` · ${t.year}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )
+    }
+
+    <section class="with-margin" aria-labelledby="references">
+      <h2 class="section-head margin" id="references">References</h2>
+      <p class="main">{cv.references}</p>
+    </section>
+  </div>
+</Base>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-print]');
+  if (button) {
+    button.hidden = false;
+    button.addEventListener('click', () => window.print());
+  }
+  // Expand collapsed sections when printing.
+  addEventListener('beforeprint', () => {
+    for (const d of document.querySelectorAll<HTMLDetailsElement>('.training details')) d.open = true;
+  });
+</script>

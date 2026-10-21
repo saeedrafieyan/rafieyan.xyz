@@ -1,0 +1,67 @@
+---
+import type { Project } from '../lib/data';
+import { getPublications, projectHasPage } from '../lib/data';
+import Plate from './Plate.astro';
+import Status from './Status.astro';
+import InlineList from './InlineList.astro';
+
+interface Props {
+  project: Project;
+  figure?: number;
+}
+const { project, figure } = Astro.props;
+const d = project.data;
+const pubs = await getPublications();
+const hasPage = projectHasPage(project);
+const href = hasPage ? `/projects/${project.id}/` : (d.links.code ?? d.links.app ?? d.links.model);
+const versions = d.versions.map((v) => {
+  const pub = pubs.find((p) => p.id === v.publication);
+  return { ...v, pub };
+});
+---
+
+<article class:list={['featured', { 'has-figure': d.figure }]}>
+  {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} caption={d.figure.caption} figure={figure} />}
+  <div>
+    <h3 class="featured-title">
+      {href ? <a href={href}>{d.title}</a> : d.title}
+      {d.status !== 'active' && <Status status={d.status} />}
+    </h3>
+    <p class="project-summary">{d.summary}</p>
+    {d.facts && <p class="featured-facts">{d.facts}</p>}
+    {
+      versions.length > 0 && (
+        <ol class="versions-inline" aria-label={`${d.title} versions`}>
+          {versions.map((v, i) => (
+            <li>
+              {i > 0 && (
+                <span class="arrow" aria-hidden="true">
+                  →{' '}
+                </span>
+              )}
+              {v.pub ? (
+                <a href={`/publications/#${v.pub.key}`}>
+                  {v.version} {v.year}
+                </a>
+              ) : (
+                `${v.version} ${v.year}`
+              )}
+              {v.pub && <span class="muted"> · {v.pub.data.venue}</span>}
+            </li>
+          ))}
+        </ol>
+      )
+    }
+    <InlineList
+      class="project-links"
+      label={`${d.title} links`}
+      links={[
+        { label: 'Code', href: d.links.code },
+        { label: 'Web app', href: d.links.app },
+        { label: 'Model', href: d.links.model },
+        { label: 'Dataset', href: d.links.dataset },
+        { label: 'Project page →', href: hasPage ? `/projects/${project.id}/` : undefined },
+      ]}
+    />
+  </div>
+</article>

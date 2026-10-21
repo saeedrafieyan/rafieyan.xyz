@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .bg { fill: #fbfaf6; } .ink { fill: #9c2b23; }
+    @media (prefers-color-scheme: dark) { .bg { fill: #161513; } .ink { fill: #ee8e7a; } }
+  </style>
+  <rect class="bg" width="32" height="32" rx="4"/>
+  <g class="ink">
+    <circle cx="6" cy="8" r="3.6"/><circle cx="16" cy="8" r="3.6"/><circle cx="26" cy="8" r="3.6"/>
+    <rect x="2" y="14.5" width="28" height="3"/>
+    <circle cx="11" cy="24" r="3.6"/><circle cx="21" cy="24" r="3.6"/>
+  </g>
+</svg>

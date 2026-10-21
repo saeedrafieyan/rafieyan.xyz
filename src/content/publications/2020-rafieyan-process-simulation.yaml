@@ -1,0 +1,23 @@
+title: 'Process Simulation of Biodiesel Production from Soybean Oil with Aspen HYSYS: A Comparative Study of two different processes'
+authors:
+  - Saeed Rafieyan
+  - Ahmad Bayat
+year: 2020
+date: 2020-04
+type: conference
+status: published
+venue: 11th International Chemical Engineering Congress & Exhibition (IChEC 2020), Fouman, Iran
+url: https://www.researchgate.net/publication/345254236_Process_Simulation_of_Biodiesel_Production_from_Soybean_Oil_with_Aspen_HYSYS_A_Comparative_Study_of_two_different_processes
+pdf: /files/rafieyan-2020-biodiesel-ichec.pdf
+abstract: >-
+  Biodiesel is one of the most promising green fuels at present which can be easily obtained from various vegetable
+  oils/animal fats and even waste cooking oils. In recent years, researchers have investigated a lot about biodiesel
+  production processes. In order to produce biodiesel in an industrial scale and optimize the process, it's needed
+  firstly to simulate the production process to obtain information consistent with real data. In this respect, the
+  vegetable oil fatty acid components (as a feedstock) were defined in detail. Afterward, two different processes
+  suggested in the literature for biodiesel production were compared in terms of resource consumption and biodiesel
+  yield.
+selected: false
+topics:
+  - process-ml
+projects: []

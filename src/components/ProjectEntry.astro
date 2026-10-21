@@ -1,0 +1,58 @@
+---
+import type { Project } from '../lib/data';
+import { projectHasPage } from '../lib/data';
+import Plate from './Plate.astro';
+import Status from './Status.astro';
+import InlineList from './InlineList.astro';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const d = project.data;
+const hasPage = projectHasPage(project);
+const href = hasPage ? `/projects/${project.id}/` : (d.links.code ?? d.links.app ?? d.links.model);
+const years = d.years.end ? `${d.years.start}–${d.years.end}` : `${d.years.start}–present`;
+const facts = [
+  ['Role', d.role],
+  ['Years', years],
+  ['Methods', d.methods],
+  ['Data', d.data],
+  ['Licence', d.licence],
+].filter(([, v]) => v);
+---
+
+<article class="project" id={project.id}>
+  <h3 class="project-title">
+    {href ? <a href={href}>{d.title}</a> : d.title}
+    <Status status={d.status} />
+  </h3>
+  <div class:list={['project-body', { 'has-figure': d.figure }]} style="margin-top: var(--space-xs)">
+    {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} />}
+    <div>
+      <p class="project-summary">{d.summary}</p>
+      <dl class="facts">
+        {
+          facts.map(([k, v]) => (
+            <>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </>
+          ))
+        }
+      </dl>
+      <InlineList
+        class="project-links"
+        label={`${d.title} links`}
+        links={[
+          { label: 'Code', href: d.links.code },
+          { label: 'Web app', href: d.links.app },
+          { label: 'Model', href: d.links.model },
+          { label: 'Dataset', href: d.links.dataset },
+          { label: 'DOI', href: d.links.doi && `https://doi.org/${d.links.doi}` },
+          { label: 'Project page →', href: hasPage ? `/projects/${project.id}/` : undefined },
+        ]}
+      />
+    </div>
+  </div>
+</article>

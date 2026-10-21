@@ -1,0 +1,24 @@
+title: "Bioprinting-Enabled Customization of Biohybrid Actuators: Scaling Dimensions and Functional Complexity"
+authors:
+  - "Maede Pajouhande"
+  - "Nehar Celikkin"
+  - "Saeed Rafieyan"
+  - "Maria Celeste Tirelli"
+  - "Fabio Maiullari"
+  - "Maryia Piletskaya"
+  - "Marco Costantini"
+year: 2026
+date: "2026-10-14"
+type: review
+status: published
+venue: "Gels"
+volume: "12"
+issue: "10"
+pages: "923"
+doi: "10.3390/gels12100923"
+url: "https://www.mdpi.com/2310-2861/12/10/923"
+abstract: "Biohybrid actuators integrate living contractile cells with engineered materials, combining biological force generation with the structural and functional control offered by synthetic components. However, translating engineered muscle tissue into reproducible, high-performance biohybrid robots remains limited by tissue organization, matrix degradation, force transmission, and long-term functional stability. This review analyzes how biofabrication parameters and material properties influence tissue maturation and actuator-level performance, with particular emphasis on bioprinting. We compare muscle cell sources; extrusion-based, embedded, and light-assisted fabrication strategies; and scaffold biomaterials using reported structural and functional outcomes. We also evaluate electrical and optical activation and mechanical conditioning, distinguishing their roles in controlling contraction and promoting maturation. The comparison highlights a gap between architectural control during fabrication and reproducible robotic performance: methods that produce complex muscle constructs do not necessarily yield integrated devices with validated force transmission or locomotion. Tissue maturation, tissue–material interfaces, and nutrient transport emerge as closely coupled priorities for scaling functional constructs. We conclude with a framework for standardized benchmarking and discuss multimaterial printing, data-driven design, and feedback control as complementary routes toward more reproducible and capable biohybrid actuators."
+selected: false
+topics:
+  - biofabrication
+projects: []

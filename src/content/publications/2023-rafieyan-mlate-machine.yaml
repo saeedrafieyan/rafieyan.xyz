@@ -1,0 +1,43 @@
+title: 'MLATE: Machine learning for predicting cell behavior on cardiac tissue engineering scaffolds'
+authors:
+  - Saeed Rafieyan
+  - Ebrahim Vasheghani-Farahani
+  - Nafiseh Baheiraei
+  - Hamidreza Keshavarz
+year: 2023
+date: 2023-03-21
+type: article
+status: published
+venue: Computers in Biology and Medicine
+volume: '158'
+pages: '106804'
+doi: 10.1016/j.compbiomed.2023.106804
+url: https://www.sciencedirect.com/science/article/pii/S001048252300269X
+code: https://github.com/saeedrafieyan/MLATE
+abstract: >-
+  Cardiovascular disease is one of the leading causes of mortality worldwide and is responsible for millions of
+  deaths annually. One of the most promising approaches to deal with this problem, which has spread recently, is
+  cardiac tissue engineering (CTE). Many researchers have tried developing scaffolds with different materials, cell
+  lines, and fabrication methods to help regenerate heart tissue. Machine learning (ML) is one of the hottest topics
+  in science and technology, revolutionizing many fields and changing our perspective on solving problems. As a
+  result of using ML, some scientific issues have been resolved, including protein-folding, a challenging problem in
+  biology that remained unsolved for 50 years. However, it is not well addressed in tissue engineering. An AI-based
+  software was developed by our group called MLATE (Machine Learning Applications in Tissue Engineering) to tackle
+  tissue engineering challenges, which highly depend on conducting costly and time-consuming experiments. For the
+  first time, to the best of our knowledge, a CTE scaffold dataset was created by collecting specifications from the
+  literature, including different materials, cell lines, and fabrication methods commonly used in CTE scaffold
+  development. These specifications were used as variables in the study. Then, the CTE scaffolds were rated based on
+  cell behaviors such as cell viability, growth, proliferation, and differentiation on the scaffold on a scale of
+  0–3. These ratings were considered a function of the variables in the gathered dataset. It should be stated that
+  this study was merely based on information available in the literature. Then, twenty-eight ML algorithms were
+  applied to determine the most effective one for predicting cell behavior on CTE scaffolds fabricated by different
+  materials, compositions, and methods. The results indicated the high performance of XGBoost with an accuracy of
+  87%. Also, by implementing ensemble learning algorithms and using five algorithms with the best performance, an
+  accuracy of 93% with the AdaBoost Classifier and Voting Classifier was achieved. Finally, the open-source software
+  developed in this study was made available for everyone by publishing the best model along with a step-by-step
+  guide to using it online at: https://github.com/saeedrafieyan/MLATE.
+selected: true
+topics:
+  - scaffold-ml
+projects:
+  - mlate

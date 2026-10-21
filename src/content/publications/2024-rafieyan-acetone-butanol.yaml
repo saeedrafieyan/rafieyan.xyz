@@ -1,0 +1,38 @@
+title: 'Acetone-butanol-ethanol fermentation products recovery: Challenges and opportunities'
+authors:
+  - Saeed Rafieyan
+  - Mohammad Amin Boojari
+  - Ali Setayeshnia
+  - Mohammad Fakhroleslam
+  - Eduardo Sánchez-Ramírez
+  - Mohammad Saber Bay
+  - Juan Gabriel Segovia-Hernández
+year: 2024
+date: 2024-04-17
+type: review
+status: published
+venue: Chemical Engineering Research and Design
+volume: '205'
+pages: 640–664
+doi: 10.1016/j.cherd.2024.04.021
+url: https://www.sciencedirect.com/science/article/pii/S0263876224002223
+abstract: >-
+  Nowadays, global warming is one of the most significant concerns in modern societies, which entails considerable
+  costs to the environment, health, economy, etc. Fossil fuels play an essential role in this phenomenon and finding
+  an alternative for them has been the research topic for the past few decades. Among the array of options
+  available, biofuel stands out as a highly effective and environmentally sustainable alternative. Biobutanol
+  presents properties like high heating value, low volatility, high viscosity, and low corrosion. Additionally, it
+  is a much safer option for use, and its ability to blend with gasoline and other fuels turns it into a suitable
+  and promising renewable alternative. Biobutanol can be produced from the agricultural industry's residues by the
+  acetone-butanol-ethanol (ABE) fermentation process. The separation and purification of biobutanol from the
+  fermentation broth account for 40 % of the plant budget, which is notable. Various separation techniques like
+  liquid-liquid extraction, membrane perstraction, gas stripping, vacuum flash, membrane pervaporation,
+  thermopervaporation, reverse osmosis, adsorption, etc., are applied. A befitting separation method must produce
+  sufficient butanol concentration in the output and reduce the final product's cost so biobutanol can compete
+  economically with other fuels. This work reviewed the existing processes for the separation and purification of
+  butanol from ABE fermentation, including advanced methods. All methods will be discussed in detail considering
+  environmental and economic parameters and each technique's superiors and challenges.
+selected: false
+topics:
+  - process-ml
+projects: []

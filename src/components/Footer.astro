@@ -1,0 +1,47 @@
+---
+import { getProfile, siteUpdated } from '../lib/data';
+import { dayMonthYear, isoDay } from '../lib/dates';
+import Woodpile from './Woodpile.astro';
+
+const { data: p } = await getProfile();
+const updated = siteUpdated();
+const elsewhere = [
+  { label: 'Google Scholar', href: p.profiles.scholar },
+  { label: 'ORCID', href: p.profiles.orcid },
+  { label: 'GitHub', href: p.profiles.github },
+  { label: 'Hugging Face', href: p.profiles.huggingface },
+  { label: 'LinkedIn', href: p.profiles.linkedin },
+  { label: 'Scopus', href: p.profiles.scopus },
+  { label: 'X', href: p.profiles.x },
+  { label: 'Telegram', href: p.profiles.telegram },
+].filter((l) => l.href);
+---
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <section aria-labelledby="footer-contact">
+      <h2 id="footer-contact">Contact</h2>
+      <p><a href={`mailto:${p.email}`}>{p.email}</a></p>
+      <p>{p.institute.name}, {p.city}</p>
+    </section>
+    <section aria-labelledby="footer-elsewhere">
+      <h2 id="footer-elsewhere">Elsewhere</h2>
+      <ul>
+        {
+          elsewhere.map((l) => (
+            <li>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+    <section aria-labelledby="footer-colophon">
+      <h2 id="footer-colophon">Colophon</h2>
+      <Woodpile />
+      <p style="margin-top: var(--space-xs)">Set in Newsreader and IBM Plex Sans. Built with Astro.</p>
+      <p>Updated <time datetime={isoDay(updated)}>{dayMonthYear(updated)}</time></p>
+      <button type="button" class="text-button" data-theme-reset hidden>Use system theme</button>
+    </section>
+  </div>
+</footer>

@@ -1,0 +1,156 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Plate from '../../components/Plate.astro';
+import PubItem from '../../components/PubItem.astro';
+import InlineList from '../../components/InlineList.astro';
+import { getProjects, getPublications, projectHasPage, type Project } from '../../lib/data';
+
+export const getStaticPaths = (async () => {
+  const projects = await getProjects();
+  return projects.filter(projectHasPage).map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props as { project: Project };
+const d = project.data;
+const { Content } = await render(project);
+const pubs = await getPublications();
+const related = pubs.filter((p) => p.data.projects.includes(project.id));
+const versions = d.versions.map((v) => ({ ...v, pub: pubs.find((p) => p.id === v.publication) }));
+const missing = d.versions.filter((v) => v.publication && !pubs.some((p) => p.id === v.publication));
+if (missing.length) {
+  throw new Error(
+    `Project "${project.id}": version ${missing.map((v) => v.version).join(', ')} points to a publication that does not exist ` +
+      `(${missing.map((v) => v.publication).join(', ')}). Use the publication's file name without .yaml.`,
+  );
+}
+const canonical = versions.at(-1)?.pub ?? related[0];
+const years = d.years.end ? `${d.years.start}–${d.years.end}` : `${d.years.start}–present`;
+const facts = [
+  ['Role', d.role],
+  ['Methods', d.methods],
+  ['Data', d.data],
+  ['Licence', d.licence],
+].filter(([, v]) => v);
+---
+
+<Base title={d.title} description={d.summary} type="article">
+  <article class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <p class="kicker">Project · {years}</p>
+        <h1 class="page-title">{d.title}</h1>
+        <p class="standfirst">{d.summary}</p>
+        {
+          facts.length > 0 && (
+            <dl class="facts">
+              {facts.map(([k, v]) => (
+                <>
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </>
+              ))}
+            </dl>
+          )
+        }
+        <InlineList
+          class="project-links"
+          label={`${d.title} links`}
+          links={[
+            { label: 'Code', href: d.links.code },
+            { label: 'Web app', href: d.links.app },
+            { label: 'Model', href: d.links.model },
+            { label: 'Dataset', href: d.links.dataset },
+            { label: 'DOI', href: d.links.doi && `https://doi.org/${d.links.doi}` },
+          ]}
+        />
+      </div>
+    </header>
+
+    {
+      d.figure && (
+        <div class="with-margin">
+          <div class="main">
+            <Plate image={d.figure.image} alt={d.figure.alt} caption={d.figure.caption} figure={1} eager />
+          </div>
+        </div>
+      )
+    }
+
+    {
+      versions.length > 0 && (
+        <section class="with-margin" aria-labelledby="versions">
+          <h2 class="section-head margin" id="versions">
+            Versions
+          </h2>
+          <div class="main scroll-region" role="region" tabindex="0" aria-label={`${d.title} versions`}>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Version</th>
+                  <th scope="col">Year</th>
+                  <th scope="col">Scope</th>
+                  <th scope="col">Paper</th>
+                </tr>
+              </thead>
+              <tbody>
+                {versions.map((v) => (
+                  <tr>
+                    <td>{v.version}</td>
+                    <td class="tabular">{v.year}</td>
+                    <td>{v.scope}</td>
+                    <td>{v.pub ? <a href={`/publications/#${v.pub.key}`}>{v.pub.data.venue}</a> : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="with-margin" aria-labelledby="about-project">
+      <h2 class="section-head margin" id="about-project">About</h2>
+      <div class="main prose"><Content /></div>
+    </section>
+
+    {
+      canonical && (
+        <section class="with-margin" aria-labelledby="cite">
+          <h2 class="section-head margin" id="cite">
+            How to cite
+          </h2>
+          <div class="main bibtex-panel">
+            <p>
+              Please cite <a href={`/publications/#${canonical.key}`}>{canonical.data.title}</a>.
+            </p>
+            <div class="copy-row">
+              <button type="button" class="btn btn-small" data-copy hidden>
+                Copy BibTeX
+              </button>
+            </div>
+            <div class="scroll-region" role="region" tabindex="0" aria-label={`BibTeX for ${d.title}`}>
+              <pre>{canonical.bibtex}</pre>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      related.length > 0 && (
+        <section class="with-margin" aria-labelledby="related">
+          <h2 class="section-head margin" id="related">
+            Related publications
+          </h2>
+          <ul class="pub-list main">
+            {related.map((pub) => (
+              <PubItem pub={pub} mode="compact" />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </article>
+</Base>

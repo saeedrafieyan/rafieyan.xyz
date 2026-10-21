@@ -1,0 +1,133 @@
+---
+import type { Publication } from '../lib/data';
+import { TYPE_LABELS } from '../lib/data';
+import { compactAuthors, shortName, truncateAuthors } from '../lib/authors';
+import Status from './Status.astro';
+
+interface Props {
+  pub: Publication;
+  mode?: 'full' | 'compact';
+  numbered?: boolean;
+  showDoi?: boolean;
+  headingLevel?: 'h3' | 'h4';
+}
+const { pub, mode = 'full', numbered = mode === 'full', showDoi = mode === 'full', headingLevel = 'h3' } = Astro.props;
+const d = pub.data;
+const Heading = headingLevel;
+const href = d.doi ? `https://doi.org/${d.doi}` : (d.url ?? d.pdf);
+const underReview = d.status === 'under-review';
+const isThesis = d.type === 'thesis';
+
+const details = [
+  d.volume && (d.issue ? `${d.volume}(${d.issue})` : d.volume),
+  d.pages,
+].filter(Boolean).join(', ');
+
+const full = truncateAuthors(pub.authors);
+const compact = compactAuthors(pub.authors);
+const shortTitle = d.title.length > 60 ? `${d.title.slice(0, 57)}…` : d.title;
+---
+
+<li
+  class:list={['pub-item', { 'pub-compact': mode === 'compact' && !numbered }]}
+  id={mode === 'full' ? pub.key : undefined}
+  value={numbered ? pub.n : undefined}
+  data-type={underReview ? 'under-review' : d.type}
+  data-year={d.year}
+  data-topics={d.topics.join(' ')}
+  data-first={pub.firstAuthor ? '1' : '0'}
+>
+  {numbered && <span class="pub-n" aria-hidden="true">[{pub.n}]</span>}
+  <div>
+    <Heading class="pub-title">{href ? <a href={href}>{d.title}</a> : d.title}</Heading>
+
+    {
+      mode === 'full' ? (
+        <p class="pub-authors">
+          {full.shown.map((a, i) => (
+            <>
+              {i > 0 && ', '}
+              {a === 'ellipsis' ? '…' : a.isOwner ? <strong>{a.full}</strong> : a.full}
+              {a !== 'ellipsis' && a.corresponding && <sup>*</sup>}
+              {a !== 'ellipsis' && a.equal && <sup>†</sup>}
+            </>
+          ))}
+          {full.hidden > 0 && (
+            <>
+              {' '}
+              <details>
+                <summary>+{full.hidden} more</summary>
+                <span>
+                  {' '}
+                  (all authors: {pub.authors.map((a) => a.full).join(', ')})
+                </span>
+              </details>
+            </>
+          )}
+        </p>
+      ) : (
+        <p class="pub-authors">
+          {compact.shown.map((a, i) => (
+            <>
+              {i > 0 && ', '}
+              {a.isOwner ? <strong>{shortName(a)}</strong> : shortName(a)}
+            </>
+          ))}
+          {compact.etAl && ', et al.'}
+        </p>
+      )
+    }
+
+    <p class="pub-venue">
+      {underReview ? <span>Submitted manuscript</span> : <span class="journal">{d.venue}</span>}
+      {mode === 'full' && details && <span>{', '}{details}</span>}
+      <span>{' · '}<time datetime={d.date ?? String(d.year)}>{d.year}</time></span>
+      {
+        mode === 'full' && d.type !== 'article' && !isThesis && !underReview && (
+          <span>{' · '}{TYPE_LABELS[d.type]}</span>
+        )
+      }
+      {
+        showDoi && d.doi && (
+          <span>
+            {' · '}
+            <a class="doi" href={`https://doi.org/${d.doi}`} data-doi>
+              doi:{d.doi}
+            </a>
+          </span>
+        )
+      }
+      <Status status={d.status} />
+    </p>
+
+    {
+      mode === 'full' && (d.pdf || d.code || d.data || d.app || d.abstract || pub.bibtex) && (
+        <div class="pub-links">
+          {d.pdf && <a href={d.pdf}>PDF</a>}
+          {d.code && <a href={d.code}>Code</a>}
+          {d.data && <a href={d.data}>Data</a>}
+          {d.app && <a href={d.app}>App</a>}
+          {d.abstract && (
+            <details>
+              <summary>Abstract</summary>
+              <div class="pub-panel abstract-panel">{d.abstract}</div>
+            </details>
+          )}
+          <details class="bibtex">
+            <summary>BibTeX</summary>
+            <div class="pub-panel bibtex-panel">
+              <div class="copy-row">
+                <button type="button" class="btn btn-small" data-copy hidden>
+                  Copy BibTeX
+                </button>
+              </div>
+              <div class="scroll-region" role="region" tabindex="0" aria-label={`BibTeX for ${shortTitle}`}>
+                <pre>{pub.bibtex}</pre>
+              </div>
+            </div>
+          </details>
+        </div>
+      )
+    }
+  </div>
+</li>

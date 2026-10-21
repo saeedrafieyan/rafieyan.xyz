@@ -1,0 +1,382 @@
+# Pages CMS configuration — https://pagescms.org/docs/configuration/
+# Edit the site at https://app.pagescms.org (sign in with GitHub, open this repository).
+# Every save is a commit; Vercel rebuilds the site in about a minute.
+
+media:
+  - name: images
+    label: Images
+    input: public/uploads
+    output: /uploads
+    categories: [image]
+    rename: safe
+  - name: files
+    label: Files (PDF)
+    input: public/files
+    output: /files
+    extensions: [pdf]
+    rename: safe
+
+settings:
+  content:
+    merge: true # keep keys the forms below don't show
+  commit:
+    templates:
+      create: 'Add {path} (via Pages CMS)'
+      update: 'Update {path} (via Pages CMS)'
+      delete: 'Delete {path} (via Pages CMS)'
+
+actions:
+  - name: orcid-check
+    label: Check ORCID for new papers
+    workflow: orcid-check.yml
+    confirm:
+      title: Check ORCID now?
+      message: Looks for papers on your ORCID record that are not on the site and opens a pull request with them.
+  - name: cv-pdf
+    label: Rebuild CV PDF
+    workflow: cv-pdf.yml
+    confirm:
+      title: Rebuild the CV PDF?
+      message: Prints the /cv/ page to /files/saeed-rafieyan-cv.pdf and publishes it. This also runs automatically after CV or publication edits.
+
+components:
+  cv-entry:
+    type: object
+    label: Entry
+    fields:
+      - { name: role, label: Degree / role, type: string, required: true }
+      - { name: org, label: Institution / organisation, type: string, required: true }
+      - { name: org_url, label: Website, type: string }
+      - { name: place, label: Place, type: string }
+      - { name: start, label: Start (YYYY-MM), type: string, required: true }
+      - { name: end, label: End (YYYY-MM; empty = present), type: string }
+      - { name: thesis, label: Thesis title, type: string }
+      - { name: bullets, label: Bullet points (up to 3), type: text, list: true }
+
+content:
+  # ---------------------------------------------------------------- Profile
+  - name: profile
+    label: Profile & home page
+    type: file
+    path: src/content/profile/profile.md
+    format: yaml-frontmatter
+    fields:
+      - { name: name, label: Name, type: string, required: true }
+      - name: alternate_names
+        label: Other spellings of your name
+        description: Used to find and bold you in author lists (e.g. Saeed Rafieyan Boroujeni).
+        type: string
+        list: true
+      - { name: role, label: Role, type: string, required: true, description: 'Short, e.g. "PhD researcher".' }
+      - { name: city, label: City, type: string, required: true }
+      - name: institute
+        label: Institute
+        type: object
+        fields:
+          - { name: name, label: Full name, type: string, required: true }
+          - { name: short, label: Short name, type: string, required: true, description: 'e.g. IChF PAN' }
+          - { name: url, label: Website, type: string }
+      - name: group
+        label: Research group
+        type: object
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: url, label: Website, type: string }
+      - name: standfirst
+        label: One-sentence summary (under the name)
+        type: text
+        required: true
+        description: Under 240 characters.
+      - name: description
+        label: Search-engine description
+        type: text
+      - name: now
+        label: '"Now" line'
+        description: Optional. Leave the text empty to hide it. You get a build warning when it is older than 4 months.
+        type: object
+        fields:
+          - { name: text, label: Text, type: string }
+          - { name: date, label: Month (YYYY-MM), type: string }
+      - { name: email, label: Email, type: string, required: true }
+      - name: profiles
+        label: Profile links (full URLs; leave empty to hide)
+        type: object
+        fields:
+          - { name: scholar, label: Google Scholar, type: string }
+          - { name: orcid, label: ORCID, type: string }
+          - { name: github, label: GitHub, type: string }
+          - { name: linkedin, label: LinkedIn, type: string }
+          - { name: scopus, label: Scopus, type: string }
+          - { name: huggingface, label: Hugging Face, type: string }
+          - { name: x, label: X / Twitter, type: string }
+          - { name: telegram, label: Telegram, type: string }
+      - name: portrait
+        label: Portrait
+        type: object
+        fields:
+          - { name: image, label: Image, type: image, options: { media: images } }
+          - { name: alt, label: Alt text, type: string, description: Describe the photo in a few words. }
+      - name: cv_pdf
+        label: CV PDF
+        description: Rebuilt automatically from the CV page (/files/saeed-rafieyan-cv.pdf). Upload your own PDF here only if you prefer it.
+        type: file
+        options: { media: files }
+      - name: focus
+        label: Research focus (home page)
+        type: object
+        list: { collapsible: { collapsed: true, summary: '{term}' } }
+        fields:
+          - { name: term, label: Heading, type: string, required: true }
+          - { name: description, label: Description, type: text, required: true }
+          - name: topic
+            label: Topic tag
+            type: string
+            description: Short tag, e.g. scaffold-ml. Publications with the same tag are counted and linked.
+      - name: also_exploring
+        label: Also exploring
+        type: string
+        list: true
+      - { name: contact_note, label: Contact sentence, type: string }
+      - { name: body, label: About / research (home page), type: rich-text, options: { media: images } }
+
+  # ---------------------------------------------------------------- Publications
+  - name: publications
+    label: Publications
+    type: collection
+    path: src/content/publications
+    format: yaml
+    filename:
+      template: '{fields.year}-{primary}.yaml'
+      field: create
+    view:
+      fields: [title, year, type, status, selected]
+      primary: title
+      sort: [year, title]
+      search: [title, venue, authors]
+      default: { sort: year, order: desc }
+    actions:
+      - name: add-doi
+        label: Add by DOI
+        workflow: add-publication.yml
+        scope: collection
+        fields:
+          - { name: doi, label: 'DOI (e.g. 10.1088/1758-5090/aeb162)', type: text, required: true }
+          - { name: selected, label: Show on the home page, type: checkbox }
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - name: authors
+        label: Authors
+        description: 'One per line, in order: "Given Family". Use "Family, Given" for two-word family names (e.g. "Partovi Nasr, Minoo"). Add * for the corresponding author.'
+        type: string
+        list: { min: 1, collapsible: false }
+        required: true
+      - { name: year, label: Year, type: number, required: true }
+      - { name: date, label: Date (YYYY-MM-DD or YYYY-MM), type: string, description: Online publication date; used for ordering. }
+      - name: type
+        label: Type
+        type: select
+        options:
+          values:
+            - { name: article, label: Journal article }
+            - { name: review, label: Review }
+            - { name: conference, label: Conference paper }
+            - { name: preprint, label: Preprint }
+            - { name: chapter, label: Book chapter }
+            - { name: thesis, label: Thesis }
+      - name: status
+        label: Status
+        type: select
+        options:
+          values:
+            - { name: published, label: Published }
+            - { name: in-press, label: In press }
+            - { name: under-review, label: Under review }
+            - { name: preprint, label: Preprint }
+      - { name: venue, label: Journal / conference, type: string }
+      - { name: volume, label: Volume, type: string }
+      - { name: issue, label: Issue, type: string }
+      - { name: pages, label: Pages or article number, type: string }
+      - { name: doi, label: DOI, type: string, description: 'Just the DOI, e.g. 10.1088/1758-5090/ad6374 (a doi.org link also works).' }
+      - { name: url, label: Article URL, type: string }
+      - { name: pdf, label: PDF, type: file, options: { media: files } }
+      - { name: code, label: Code URL, type: string }
+      - { name: data, label: Data URL, type: string }
+      - { name: app, label: App URL, type: string }
+      - { name: abstract, label: Abstract, type: text }
+      - { name: selected, label: Show on the home page, type: boolean }
+      - name: topics
+        label: Topic tags
+        description: Same tags as in Profile → Research focus (e.g. scaffold-ml, biofabrication, process-ml).
+        type: string
+        list: true
+      - name: projects
+        label: Projects
+        description: Project file names this paper belongs to (e.g. mlate).
+        type: string
+        list: true
+      - { name: bibtex, label: Custom BibTeX (optional), type: text, description: Leave empty; BibTeX is generated automatically. }
+
+  # ---------------------------------------------------------------- Projects
+  - name: projects
+    label: Projects
+    type: collection
+    path: src/content/projects
+    format: yaml-frontmatter
+    filename:
+      template: '{primary}.md'
+      field: create
+    view:
+      fields: [title, tier, status, order]
+      primary: title
+      sort: [order, title]
+      default: { sort: order, order: asc }
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - name: tier
+        label: Placement
+        type: select
+        options:
+          values:
+            - { name: featured, label: Featured (home page + projects) }
+            - { name: standard, label: Standard (projects page) }
+            - { name: minor, label: Minor (one line under “Other and earlier work”) }
+      - name: status
+        label: Status
+        type: select
+        options:
+          values:
+            - { name: active, label: Active }
+            - { name: maintained, label: Maintained }
+            - { name: archived, label: Archived }
+      - { name: order, label: Order (lower comes first), type: number }
+      - name: years
+        label: Years
+        type: object
+        fields:
+          - { name: start, label: Start year, type: number, required: true }
+          - { name: end, label: End year (empty = ongoing), type: number }
+      - { name: summary, label: Summary (about 60 words), type: text, required: true }
+      - { name: facts, label: Facts line (home page), type: string, description: 'e.g. Python · 2,646 samples · 130 biomaterials' }
+      - { name: role, label: Your role, type: string }
+      - { name: methods, label: Methods, type: string }
+      - { name: data, label: Data, type: string }
+      - { name: licence, label: Licence, type: string }
+      - name: links
+        label: Links
+        type: object
+        fields:
+          - { name: code, label: Code, type: string }
+          - { name: app, label: Web app, type: string }
+          - { name: dataset, label: Dataset, type: string }
+          - { name: model, label: Model, type: string }
+          - { name: doi, label: DOI, type: string }
+      - name: figure
+        label: Figure
+        type: object
+        fields:
+          - { name: image, label: Image, type: image, options: { media: images } }
+          - { name: alt, label: Alt text, type: string }
+          - { name: caption, label: Caption, type: string }
+      - name: versions
+        label: Versions
+        type: object
+        list: { collapsible: { collapsed: true, summary: '{version} ({year})' } }
+        fields:
+          - { name: version, label: Version, type: string, required: true }
+          - { name: year, label: Year, type: number, required: true }
+          - { name: scope, label: Scope, type: string, required: true }
+          - { name: publication, label: Publication file name (without .yaml), type: string }
+      - { name: body, label: Project page text (leave empty for no page), type: rich-text, options: { media: images } }
+
+  # ---------------------------------------------------------------- News
+  - name: news
+    label: News & posts
+    type: collection
+    path: src/content/news
+    format: yaml-frontmatter
+    filename:
+      template: '{year}-{month}-{day}-{fields.kind}.md'
+      field: create
+    view:
+      fields: [date, text, kind, draft]
+      primary: text
+      sort: [date]
+      default: { sort: date, order: desc }
+    fields:
+      - { name: date, label: Date, type: date, required: true, options: { format: yyyy-MM-dd } }
+      - name: kind
+        label: Kind
+        type: select
+        options:
+          values: [paper, release, talk, award, position, note]
+      - { name: text, label: News text (one or two sentences), type: text, required: true }
+      - { name: link, label: Link (optional), type: string }
+      - { name: title, label: Post title (only for a full post), type: string }
+      - { name: description, label: Post summary, type: text }
+      - { name: draft, label: Draft (hide), type: boolean }
+      - { name: body, label: 'Post text (with a title, this becomes its own page)', type: rich-text, options: { media: images } }
+
+  # ---------------------------------------------------------------- CV
+  - name: cv
+    label: CV
+    type: file
+    path: src/content/cv/cv.yaml
+    format: yaml
+    fields:
+      - { name: updated, label: Last updated, type: date, required: true, options: { format: yyyy-MM-dd } }
+      - name: education
+        label: Education
+        component: cv-entry
+        list: { collapsible: { collapsed: true, summary: '{role}, {org}' } }
+      - name: research
+        label: Research experience
+        component: cv-entry
+        list: { collapsible: { collapsed: true, summary: '{role}, {org}' } }
+      - name: industry
+        label: Industry experience
+        component: cv-entry
+        list: { collapsible: { collapsed: true, summary: '{role}, {org}' } }
+      - name: talks
+        label: Talks and posters
+        type: object
+        list: true
+        fields:
+          - { name: date, label: Date (YYYY-MM), type: string, required: true }
+          - { name: title, label: Title, type: string, required: true }
+          - { name: event, label: Event, type: string, required: true }
+          - { name: place, label: Place, type: string }
+          - { name: url, label: Link, type: string }
+      - name: awards
+        label: Awards
+        type: object
+        list: true
+        fields:
+          - { name: year, label: Year, type: number }
+          - { name: text, label: Award, type: string, required: true }
+      - { name: service, label: Service (peer review etc.), type: text, list: true }
+      - { name: teaching, label: Teaching, type: text, list: true }
+      - name: skills
+        label: Skills
+        type: object
+        list: true
+        fields:
+          - { name: group, label: Group, type: string, required: true }
+          - { name: items, label: Skills (comma-separated), type: text, required: true }
+      - name: languages
+        label: Languages
+        type: object
+        list: true
+        fields:
+          - { name: language, label: Language, type: string, required: true }
+          - { name: level, label: Level, type: string, required: true }
+      - { name: memberships, label: Memberships, type: string, list: true }
+      - name: training
+        label: Certificates and training
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string, required: true }
+          - { name: issuer, label: Issuer, type: string }
+          - { name: year, label: Year, type: number }
+          - { name: url, label: Link, type: string }
+      - { name: references, label: References line, type: string }

@@ -1,0 +1,123 @@
+updated: 2026-10-21
+research:
+  - role: Research assistant – data scientist
+    org: Jiangnan University, Dr. Madadi’s group
+    place: Wuxi, China
+    start: 2025-01
+    bullets:
+      - Machine-learning and deep-learning models for biofuel production and process optimisation, resulting in peer-reviewed publications.
+  - role: Research assistant – data scientist
+    org: Tarbiat Modares University, Dr. Fakhroleslam’s group
+    place: Tehran, Iran
+    start: 2023-09
+    end: 2025-12
+    bullets:
+      - Machine-learning and deep-learning models for distillation and separation processes; chemical-engineering text mining.
+  - role: Research assistant – data scientist
+    org: Tarbiat Modares University, Prof. Vasheghani-Farahani’s group
+    place: Tehran, Iran
+    start: 2019-01
+    end: 2025-12
+    bullets:
+      - Developed and led AI-driven research projects, including MLATE (three versions, web app at mlate.ir) and TissueGPT, a language model fine-tuned on tissue-engineering literature.
+  - role: Data scientist
+    org: Men’s Health & Reproductive Health Research Centre, Shohadaye Tajrish Hospital
+    place: Tehran, Iran
+    start: 2022-08
+    end: 2024-01
+    bullets:
+      - Multimodal deep learning for semen analysis and drug-effectiveness prediction from clinical data and imaging.
+education:
+  - role: PhD
+    org: Institute of Physical Chemistry, Polish Academy of Sciences (IChF PAN)
+    org_url: https://ichf.edu.pl/en/groups/digital-manufacturing-of-biomimetic-systems
+    place: Warsaw, Poland
+    start: 2026-01
+    thesis: Inverse design-assisted biodegradable modular dressings for negative pressure wound healing
+    bullets:
+      - Digital Manufacturing of Biomimetic Systems group.
+  - role: MSc in Chemical Engineering – Biomedical Engineering
+    org: Tarbiat Modares University
+    org_url: https://www.modares.ac.ir/en
+    place: Tehran, Iran
+    start: 2018-09
+    end: 2022-02
+    thesis: Predicting cell behavior on cardiac tissue engineering scaffolds using machine learning algorithms
+    bullets:
+      - 'GPA: 3.78 / 4'
+  - role: BSc in Chemical Engineering
+    org: Tafresh University
+    org_url: https://tafreshu.ac.ir/
+    place: Tafresh, Iran
+    start: 2013-09
+    end: 2017-09
+    thesis: Simulation of the biodiesel production process with Aspen HYSYS
+    bullets: []
+industry:
+  - role: Data scientist
+    org: HiWEB
+    place: Tehran, Iran
+    start: 2023-01
+    end: 2025-09
+    bullets:
+      - Churn, next-purchase and purchase-value models for marketing; ASR and LLM-based quality control for Persian call-centre audio; dashboards in Flask and Plotly Dash.
+  - role: Data scientist
+    org: YecomSoft
+    place: Tehran, Iran
+    start: 2021-01
+    end: 2021-07
+    bullets:
+      - Persian NLP and text-to-speech for audiobook production.
+  - role: Django web developer (intern)
+    org: MAPSA
+    place: Tehran, Iran
+    start: 2020-08
+    end: 2020-10
+    bullets:
+      - Backend and REST APIs for an online retail platform.
+talks: []
+awards: []
+service:
+  - 'Peer reviewer for IOP Publishing journals (IOP Trusted Reviewer), including Physics in Medicine and Biology, Biomedical Materials, Biomedical Physics & Engineering Express, Engineering Research Express and Progress in Biomedical Engineering; also Results in Surfaces and Interfaces (Elsevier).'
+teaching: []
+skills:
+  - group: Machine learning
+    items: Regression, classification, clustering, feature engineering, model selection, Bayesian optimisation, gradient boosting (XGBoost, LightGBM, CatBoost), scikit-learn
+  - group: Deep learning and NLP
+    items: PyTorch, TensorFlow, Hugging Face Transformers, CNNs, RNNs, multimodal learning, LLM fine-tuning, text mining, topic modelling
+  - group: Software and data
+    items: Python, NumPy, pandas, Matplotlib, Plotly, Dash, Streamlit, Flask, FastAPI, Docker, GitHub Actions, PostgreSQL, MySQL, SQLite
+  - group: Laboratory
+    items: Cell culture, MTT assay, decellularisation, hydrogel preparation, scaffold fabrication, 3D printing, freeze-drying
+languages:
+  - language: English
+    level: Fluent (TOEFL iBT 90)
+  - language: Persian
+    level: Native
+memberships: []
+training:
+  - name: Neural Networks and Deep Learning
+    issuer: Coursera
+    year: 2020
+    url: https://www.coursera.org/verify/AELW9RNB9VFR
+  - name: 'Deep Learning with PyTorch: Image Segmentation'
+    issuer: Coursera
+    year: 2022
+    url: https://www.coursera.org/account/accomplishments/certificate/SZE6DSCJNTQ7
+  - name: 'Deep Learning with PyTorch: Object Localization'
+    issuer: Coursera
+    year: 2022
+    url: https://www.coursera.org/account/accomplishments/certificate/ATX792QD8SAV
+  - name: Data Visualization using Plotly
+    issuer: Coursera
+    year: 2022
+    url: https://www.coursera.org/account/accomplishments/certificate/6232QRVEUBJB
+  - name: Introduction to Genomic Technologies
+    issuer: Coursera
+    year: 2022
+    url: https://www.coursera.org/account/accomplishments/certificate/664SE7XGM9GS
+  - name: Python for Genomic Data Science
+    issuer: Coursera
+    year: 2022
+    url: https://www.coursera.org/account/accomplishments/certificate/SCJ5QG4EDHCU
+references: Available on request.

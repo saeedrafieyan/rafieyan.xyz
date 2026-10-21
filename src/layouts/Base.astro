@@ -1,0 +1,142 @@
+---
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getProfile } from '../lib/data';
+
+interface Props {
+  /** Page name; the site name is appended. Omit on the home page. */
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article' | 'profile';
+  jsonLd?: object | object[];
+}
+
+const { data: profile } = await getProfile();
+const { title, description, type = 'website', jsonLd } = Astro.props;
+const fullTitle = title ? `${title} — ${profile.name}` : `${profile.name} — machine learning for tissue engineering`;
+const desc = description ?? profile.description ?? profile.standfirst;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og.png', Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="author" content={profile.name} />
+    <link rel="canonical" href={canonical} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="application/rss+xml" title={`${profile.name} — news`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={profile.name} />
+    <meta property="og:title" content={title ?? profile.name} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${profile.name} — ${profile.role}, ${profile.institute.short}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+    <Font cssVariable="--font-newsreader" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--font-plex" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <Header />
+    <main id="content" class="container">
+      <slot />
+    </main>
+    <Footer />
+    <div class="visually-hidden" aria-live="polite" data-announcer></div>
+
+    <script>
+      const root = document.documentElement;
+      const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
+      const reset = document.querySelector<HTMLButtonElement>('[data-theme-reset]');
+      const media = matchMedia('(prefers-color-scheme: dark)');
+      const effective = () => root.dataset.theme ?? (media.matches ? 'dark' : 'light');
+      const stored = () => {
+        try {
+          return localStorage.getItem('theme');
+        } catch {
+          return null;
+        }
+      };
+      const sync = () => {
+        toggle?.setAttribute('aria-pressed', String(effective() === 'dark'));
+        if (reset) reset.hidden = !stored();
+      };
+      const withoutTransitions = (fn: () => void) => {
+        root.classList.add('theme-switching');
+        fn();
+        requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+      };
+
+      if (toggle) {
+        toggle.hidden = false;
+        toggle.addEventListener('click', () =>
+          withoutTransitions(() => {
+            const next = effective() === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            try {
+              localStorage.setItem('theme', next);
+            } catch {}
+            sync();
+          }),
+        );
+      }
+      reset?.addEventListener('click', () =>
+        withoutTransitions(() => {
+          delete root.dataset.theme;
+          try {
+            localStorage.removeItem('theme');
+          } catch {}
+          sync();
+        }),
+      );
+      media.addEventListener('change', sync);
+      sync();
+
+      // Copy BibTeX
+      const announcer = document.querySelector<HTMLElement>('[data-announcer]');
+      if (navigator.clipboard) {
+        for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+          button.hidden = false;
+          button.addEventListener('click', async () => {
+            const text = button.closest('.bibtex-panel')?.querySelector('pre')?.textContent ?? '';
+            try {
+              await navigator.clipboard.writeText(text);
+              button.textContent = 'Copied';
+              if (announcer) announcer.textContent = 'BibTeX copied to clipboard';
+              setTimeout(() => {
+                button.textContent = 'Copy BibTeX';
+                if (announcer) announcer.textContent = '';
+              }, 2000);
+            } catch {
+              button.textContent = 'Copy failed';
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+# Add a publication from its DOI.
+# Run it from Pages CMS (Publications → "Add by DOI") or from GitHub
+# (Actions → "Add publication by DOI" → Run workflow).
+name: Add publication by DOI
+
+on:
+  workflow_dispatch:
+    inputs:
+      doi:
+        description: 'DOI, e.g. 10.1088/1758-5090/aeb162'
+        required: false
+        type: string
+      selected:
+        description: Show on the home page
+        required: false
+        type: boolean
+        default: false
+      payload:
+        description: Filled in by Pages CMS (leave empty)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: content-writes
+  cancel-in-progress: false
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Read inputs
+        id: in
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+          DOI: ${{ inputs.doi }}
+          SELECTED: ${{ inputs.selected }}
+        run: |
+          node -e '
+            const p = process.env.PAYLOAD ? JSON.parse(process.env.PAYLOAD) : {};
+            const doi = (p.inputs?.doi ?? process.env.DOI ?? "").trim();
+            const selected = String(p.inputs?.selected ?? process.env.SELECTED) === "true";
+            if (!doi) { console.error("No DOI given."); process.exit(1); }
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `doi=${doi}\nselected=${selected}\n`);
+          '
+      - name: Look up DOI and write the file
+        env:
+          DOI: ${{ steps.in.outputs.doi }}
+          SELECTED: ${{ steps.in.outputs.selected }}
+        run: node scripts/add-publication.mjs "$DOI" $([ "$SELECTED" = "true" ] && echo --selected)
+      - name: Check the site still builds and refresh the CV PDF
+        run: npm ci && npm run cv:pdf
+      - name: Commit
+        env:
+          DOI: ${{ steps.in.outputs.doi }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/publications public/files/saeed-rafieyan-cv.pdf
+          if git diff --cached --quiet; then echo "Nothing new to commit."; exit 0; fi
+          git commit -m "Add publication $DOI"
+          git pull --rebase
+          git push

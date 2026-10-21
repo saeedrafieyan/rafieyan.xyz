@@ -1,0 +1,187 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Woodpile from '../components/Woodpile.astro';
+import InlineList from '../components/InlineList.astro';
+import PubItem from '../components/PubItem.astro';
+import FeaturedRow from '../components/FeaturedRow.astro';
+import NewsItem from '../components/NewsItem.astro';
+import { getNews, getProfile, getProjects, getPublications, topicCounts } from '../lib/data';
+import { formatPartial } from '../lib/dates';
+
+const profile = await getProfile();
+const p = profile.data;
+const { Content } = await render(profile);
+const pubs = await getPublications();
+const selected = pubs.filter((x) => x.data.selected).slice(0, 5);
+const featured = (await getProjects()).filter((x) => x.data.tier === 'featured').slice(0, 2);
+const news = await getNews();
+const recent = news.slice(0, 5);
+const counts = await topicCounts();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: p.name,
+  alternateName: p.alternate_names,
+  url: Astro.site?.href,
+  image: p.portrait ? new URL(p.portrait.image, Astro.site).href : undefined,
+  jobTitle: p.role,
+  email: `mailto:${p.email}`,
+  affiliation: { '@type': 'Organization', name: p.institute.name, url: p.institute.url },
+  sameAs: Object.values(p.profiles).filter(Boolean),
+  knowsAbout: p.focus.map((f) => f.term),
+};
+---
+
+<Base type="profile" jsonLd={jsonLd}>
+  <div class="page-grid">
+    <section class="with-margin" aria-labelledby="name">
+      {
+        p.portrait && (
+          <div class="margin">
+            <figure class="portrait">
+              <img
+                src={p.portrait.image}
+                alt={p.portrait.alt}
+                width="640"
+                height="800"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </figure>
+          </div>
+        )
+      }
+      <div class="main">
+        <p class="kicker">{p.role} · {p.institute.short} · {p.city}</p>
+        <h1 class="display-name" id="name">{p.name}</h1>
+        <p class="standfirst">{p.standfirst}</p>
+        <p class="meta-line">
+          {p.group && (p.group.url ? <a href={p.group.url}>{p.group.name}</a> : p.group.name)}
+          {p.group && ' · '}
+          {p.institute.url ? <a href={p.institute.url}>{p.institute.name}</a> : p.institute.name}
+        </p>
+        {
+          p.now && (
+            <p class="now-line">
+              <strong>Now{p.now.date && ` (${formatPartial(p.now.date)})`}:</strong> {p.now.text}
+            </p>
+          )
+        }
+        <div class="action-row">
+          <a class="btn btn-primary" href="/cv/">Curriculum vitae</a>
+          <a class="btn" href={`mailto:${p.email}`}>Email</a>
+          <InlineList
+            label="Profiles"
+            links={[
+              { label: 'Google Scholar', href: p.profiles.scholar },
+              { label: 'ORCID', href: p.profiles.orcid },
+              { label: 'GitHub', href: p.profiles.github },
+            ]}
+          />
+        </div>
+        <Woodpile class="woodpile-rule" />
+      </div>
+    </section>
+
+    <section class="with-margin" aria-labelledby="research">
+      <h2 class="section-head margin" id="research">Research</h2>
+      <div class="main">
+        <div class="prose"><Content /></div>
+        {
+          p.focus.length > 0 && (
+            <dl class="focus-list" style="margin-top: var(--space-l)">
+              {p.focus.map((f) => {
+                const n = f.topic ? (counts.get(f.topic) ?? 0) : 0;
+                return (
+                  <>
+                    <dt>{f.term}</dt>
+                    <dd>
+                      {f.description}
+                      {n > 0 && (
+                        <>
+                          {' '}
+                          <a href={`/publications/?topic=${f.topic}`}>
+                            {n} {n === 1 ? 'paper' : 'papers'} →
+                          </a>
+                        </>
+                      )}
+                    </dd>
+                  </>
+                );
+              })}
+            </dl>
+          )
+        }
+        {p.also_exploring.length > 0 && <p class="also">Also exploring: {p.also_exploring.join(' · ')}.</p>}
+      </div>
+    </section>
+
+    {
+      featured.length > 0 && (
+        <section class="with-margin" aria-labelledby="work">
+          <h2 class="section-head margin" id="work">
+            Featured work
+          </h2>
+          <div class="main">
+            {featured.map((proj, i) => (
+              <FeaturedRow project={proj} figure={i + 1} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      selected.length > 0 && (
+        <section class="with-margin" aria-labelledby="selected">
+          <h2 class="section-head margin" id="selected">
+            Selected publications
+          </h2>
+          <div class="main">
+            <ul class="pub-list">
+              {selected.map((pub) => (
+                <PubItem pub={pub} mode="compact" />
+              ))}
+            </ul>
+            <p class="section-foot">
+              <a href="/publications/">All {pubs.length} publications →</a>
+            </p>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      recent.length > 0 && (
+        <section class="with-margin" aria-labelledby="news">
+          <h2 class="section-head margin" id="news">
+            Recent news
+          </h2>
+          <div class="main">
+            <ul class="news-list">
+              {recent.map((n) => (
+                <NewsItem item={n} />
+              ))}
+            </ul>
+            {news.length > recent.length && (
+              <p class="section-foot">
+                <a href="/news/">All news →</a>
+              </p>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="with-margin" aria-labelledby="contact">
+      <h2 class="section-head margin" id="contact">Contact</h2>
+      <div class="main">
+        {p.contact_note && <p>{p.contact_note}</p>}
+        <p><a href={`mailto:${p.email}`}>{p.email}</a></p>
+      </div>
+    </section>
+  </div>
+</Base>

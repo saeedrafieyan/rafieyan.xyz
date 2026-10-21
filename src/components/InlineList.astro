@@ -1,0 +1,27 @@
+---
+// Text link list with " · " separators hidden from assistive tech.
+interface Props {
+  links: { label: string; href?: string }[];
+  class?: string;
+  label?: string;
+}
+const { links, class: className, label } = Astro.props;
+const items = links.filter((l) => l.href);
+---
+
+{
+  items.length > 0 && (
+    <ul class:list={['inline-list', className]} aria-label={label}>
+      {items.map((l, i) => (
+        <li>
+          {i > 0 && (
+            <span class="sep" aria-hidden="true">
+              ·{' '}
+            </span>
+          )}
+          <a href={l.href}>{l.label}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}

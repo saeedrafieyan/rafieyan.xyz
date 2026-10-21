@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectEntry from '../../components/ProjectEntry.astro';
+import { getProjects } from '../../lib/data';
+
+const projects = await getProjects();
+const main = projects.filter((p) => p.data.tier !== 'minor');
+const minor = projects.filter((p) => p.data.tier === 'minor');
+---
+
+<Base title="Projects" description="Open-source models, datasets and tools for tissue engineering and biofabrication.">
+  <div class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <h1 class="page-title">Projects</h1>
+        <p class="standfirst">Open-source models, datasets and tools, mostly for tissue engineering and biofabrication.</p>
+      </div>
+    </header>
+
+    {
+      main.length > 0 && (
+        <section class="with-margin" aria-labelledby="main-projects">
+          <h2 class="section-head margin visually-hidden" id="main-projects">
+            Main projects
+          </h2>
+          <div class="main">
+            {main.map((p) => (
+              <ProjectEntry project={p} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      minor.length > 0 && (
+        <section class="with-margin" aria-labelledby="other-work">
+          <h2 class="section-head margin" id="other-work">
+            Other and earlier work
+          </h2>
+          <ul class="minor-list main">
+            {minor.map((p) => {
+              const link = p.data.links.code ?? p.data.links.app;
+              const years = p.data.years.end ? `${p.data.years.start}–${p.data.years.end}` : String(p.data.years.start);
+              return (
+                <li>
+                  <b>{p.data.title}</b> · {years} · {p.data.summary}
+                  {link && (
+                    <>
+                      {' · '}
+                      <a href={link}>Repository</a>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</Base>

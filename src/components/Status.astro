@@ -1,0 +1,9 @@
+---
+import { STATUS_LABELS } from '../lib/data';
+interface Props {
+  status: string;
+}
+const label = STATUS_LABELS[Astro.props.status] ?? (Astro.props.status === 'published' ? '' : Astro.props.status);
+---
+
+{label && <span class="status">{label}</span>}

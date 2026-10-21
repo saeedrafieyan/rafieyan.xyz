@@ -1,0 +1,26 @@
+---
+// Cross-section of a 0°/90° printed scaffold: strands seen end-on above and below
+// one strand lying along the cut. The site's only ornament.
+interface Props {
+  variant?: 'rule' | 'defect';
+  scale?: number;
+  class?: string;
+}
+const { variant = 'rule', scale = 1, class: className } = Astro.props;
+const top = Array.from({ length: 8 }, (_, n) => 5.5 + 11 * n).filter((_, n) => !(variant === 'defect' && n === 5));
+const bottom = Array.from({ length: 7 }, (_, n) => 11 + 11 * n);
+---
+
+<svg
+  class:list={['woodpile', className]}
+  viewBox="0 0 88 14"
+  width={88 * scale}
+  height={14 * scale}
+  fill="currentColor"
+  aria-hidden="true"
+  focusable="false"
+>
+  {top.map((cx) => <circle cx={cx} cy="3" r="2" />)}
+  <rect x="0" y="6.25" width="88" height="1.5" />
+  {bottom.map((cx) => <circle cx={cx} cy="11" r="2" />)}
+</svg>

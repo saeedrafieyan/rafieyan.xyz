@@ -1,0 +1,38 @@
+---
+import { span } from '../lib/dates';
+
+interface Props {
+  entry: {
+    role: string;
+    org: string;
+    org_url?: string;
+    place?: string;
+    start: string;
+    end?: string;
+    thesis?: string;
+    bullets: string[];
+  };
+}
+const { entry: e } = Astro.props;
+---
+
+<li class:list={['cv-entry', { current: !e.end }]}>
+  <span class="cv-date"><time datetime={e.start}>{span(e.start, e.end)}</time></span>
+  <div>
+    <h3 class="cv-role">{e.role}</h3>
+    <p class="cv-org">
+      <span class="org">{e.org_url ? <a href={e.org_url}>{e.org}</a> : e.org}</span>
+      {e.place && <span class="place">{' · '}{e.place}</span>}
+    </p>
+    {e.thesis && <p class="cv-thesis">Thesis: <i>{e.thesis}</i></p>}
+    {
+      e.bullets.length > 0 && (
+        <ul class="cv-bullets">
+          {e.bullets.map((b) => (
+            <li>{b}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</li>

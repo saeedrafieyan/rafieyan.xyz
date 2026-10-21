@@ -1,0 +1,38 @@
+title: A practical machine learning approach for predicting the quality of 3D (bio)printed scaffolds
+authors:
+  - Saeed Rafieyan
+  - Elham Ansari
+  - Ebrahim Vasheghani-Farahani
+year: 2024
+date: 2024-07-25
+type: article
+status: published
+venue: Biofabrication
+volume: '16'
+issue: '4'
+pages: '045014'
+doi: 10.1088/1758-5090/ad6374
+url: https://iopscience.iop.org/article/10.1088/1758-5090/ad6374
+code: https://github.com/saeedrafieyan/MLATE
+abstract: >-
+  3D (Bio)printing is a highly effective method for fabricating tissue engineering scaffolds, renowned for their
+  exceptional precision and control. Artificial intelligence (AI) has become a crucial technology in this field,
+  capable of learning and replicating complex patterns that surpass human capabilities. However, the integration of
+  AI in tissue engineering is often hampered by the lack of comprehensive and reliable data. This study addresses
+  these challenges by providing one of the most extensive datasets on 3D-printed scaffolds. It provides the most
+  comprehensive open-source dataset and employs various AI techniques, from unsupervised to supervised learning.
+  This dataset includes detailed information on 1,171 scaffolds, featuring a variety of biomaterials and
+  concentrations—including 60 biomaterials such as natural and synthesized biomaterials, crosslinkers, enzymes,
+  etc.—along with 49 cell lines, cell densities, and different printing conditions. We used over 40 machine
+  learning and deep learning algorithms, tuning their hyperparameters to reveal hidden patterns and predict cell
+  response, printability, and scaffold quality. The clustering analysis using KMeans identified five distinct ones.
+  In classification tasks, algorithms such as XGBoost, Gradient Boosting, Extra Trees Classifier, Random Forest
+  Classifier, and LightGBM demonstrated superior performance, achieving higher accuracy and F1 scores. A fully
+  connected neural network with six hidden layers from scratch was developed, precisely tuning its hyperparameters
+  for accurate predictions. To promote future research, the developed dataset and the associated code are publicly
+  available on www.github.com/saeedrafieyan/MLATE.
+selected: true
+topics:
+  - scaffold-ml
+projects:
+  - mlate
