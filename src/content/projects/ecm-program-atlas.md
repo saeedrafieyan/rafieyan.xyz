@@ -12,6 +12,4 @@ summary: >-
 methods: NMF program discovery, ECM-specificity controls, classical and deep classifiers
 data: GTEx, Tabula Sapiens, MatrisomeDB
 licence: MIT
-links:
-  code: https://github.com/saeedrafieyan/ECM-Program-Atlas
 ---

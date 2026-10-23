@@ -5,7 +5,8 @@ import Base from '../../layouts/Base.astro';
 import Plate from '../../components/Plate.astro';
 import PubItem from '../../components/PubItem.astro';
 import InlineList from '../../components/InlineList.astro';
-import { getProjects, getPublications, projectHasPage, type Project } from '../../lib/data';
+import { getProfile, getProjects, getPublications, projectHasPage, pubHref, type Project } from '../../lib/data';
+import { breadcrumbs, projectLd } from '../../lib/jsonld';
 
 export const getStaticPaths = (async () => {
   const projects = await getProjects();
@@ -14,11 +15,14 @@ export const getStaticPaths = (async () => {
 
 const { project } = Astro.props as { project: Project };
 const d = project.data;
+const { data: profile } = await getProfile();
 const { Content } = await render(project);
+const hasBody = Boolean(project.body?.trim());
 const pubs = await getPublications();
-const related = pubs.filter((p) => p.data.projects.includes(project.id));
 // getProjects() has already checked that every version's publication exists.
 const versions = d.versions.map((v) => ({ ...v, pub: pubs.find((p) => p.id === v.publication) }));
+const versionIds = new Set(d.versions.map((v) => v.publication));
+const related = pubs.filter((p) => p.data.projects.includes(project.id) || versionIds.has(p.id));
 const canonical = versions.at(-1)?.pub ?? related[0];
 const years = d.years.end ? `${d.years.start}–${d.years.end}` : `${d.years.start}–present`;
 const facts = [
@@ -27,13 +31,22 @@ const facts = [
   ['Data', d.data],
   ['Licence', d.licence],
 ].filter(([, v]) => v);
+const site = Astro.site!;
+const jsonLd = [
+  projectLd(project, related, site, profile.name),
+  breadcrumbs(site, [
+    { name: profile.name, path: '/' },
+    { name: 'Projects', path: '/projects/' },
+    { name: d.title, path: `/projects/${project.id}/` },
+  ]),
+];
 ---
 
-<Base title={d.title} description={d.summary} type="article">
+<Base title={d.full_name ? `${d.title}: ${d.full_name}` : d.title} description={d.summary} type="article" jsonLd={jsonLd}>
   <article class="page-grid">
     <header class="with-margin">
       <div class="main">
-        <p class="kicker">Project · {years}</p>
+        <p class="kicker">Project · {years} · {profile.name}{d.role && `, ${d.role.toLowerCase()}`}</p>
         <h1 class="page-title">{d.title}</h1>
         <p class="standfirst">{d.summary}</p>
         {
@@ -101,7 +114,7 @@ const facts = [
                     <td>{v.version}</td>
                     <td class="tabular">{v.year}</td>
                     <td>{v.scope}</td>
-                    <td>{v.pub ? <a href={`/publications/#${v.pub.key}`}>{v.pub.data.venue}</a> : '—'}</td>
+                    <td>{v.pub ? <a href={pubHref(v.pub)}>{v.pub.data.venue}</a> : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -111,27 +124,48 @@ const facts = [
       )
     }
 
-    <section class="with-margin" aria-labelledby="about-project">
-      <h2 class="section-head margin" id="about-project">About</h2>
-      <div class="main prose"><Content /></div>
-    </section>
+    {
+      hasBody && (
+        <section class="with-margin" aria-labelledby="about-project">
+          <h2 class="section-head margin" id="about-project">
+            About
+          </h2>
+          <div class="main prose">
+            <Content />
+          </div>
+        </section>
+      )
+    }
 
     {
-      canonical && (
+      (canonical || d.bibtex) && (
         <section class="with-margin" aria-labelledby="cite">
           <h2 class="section-head margin" id="cite">
             How to cite
           </h2>
           <div class="main bibtex-panel">
-            <p>
-              Please cite <a href={`/publications/#${canonical.key}`}>{canonical.data.title}</a>.
-            </p>
+            {canonical ? (
+              <p>
+                Please cite <a href={pubHref(canonical)}>{canonical.data.title}</a>.
+              </p>
+            ) : (
+              <p>
+                Please cite {d.title}
+                {d.links.doi && (
+                  <>
+                    {' '}
+                    (<a href={`https://doi.org/${d.links.doi}`}>doi:{d.links.doi}</a>)
+                  </>
+                )}
+                .
+              </p>
+            )}
             <div class="copy-row">
               <button type="button" class="btn btn-small" data-copy hidden>
                 Copy BibTeX
               </button>
             </div>
-            <pre role="region" tabindex="0" aria-label={`BibTeX for ${d.title}`}>{canonical.bibtex}</pre>
+            <pre role="region" tabindex="0" aria-label={`BibTeX for ${d.title}`}>{canonical?.bibtex ?? d.bibtex}</pre>
           </div>
         </section>
       )

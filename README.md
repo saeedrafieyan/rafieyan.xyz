@@ -20,7 +20,8 @@ All content is plain Markdown and YAML in [`src/content/`](src/content). Every c
 | Write a longer post                  | News & posts → Add, fill in **Post title** and **Post text**                 |
 | Change bio, photo, links, "Now" line | **Profile & home page**                                                      |
 | Update the CV                        | **CV**. The PDF at `/files/saeed-rafieyan-cv.pdf` is rebuilt automatically.  |
-| Add a project                        | **Projects → Add**. Leave *Project page text* empty for no separate page.    |
+| Add a project                        | **Projects → Add**. Featured projects always get a page; for others, leave *Project page text* empty for no separate page. |
+| Help Google Scholar list a paper     | Give it an **Abstract** (and, if the publisher allows, a **PDF**): every such paper gets its own page at `/publications/<file-name>/`. |
 | Upload an image or PDF               | Use the image/file fields; uploads go to `public/uploads` and `public/files`. Resized WebP copies are made at build time. |
 
 New papers are also checked automatically: every Monday a GitHub Action compares your
@@ -41,6 +42,26 @@ npm run sync:orcid   # import anything on ORCID that's not on the site yet
 npm run cv:pdf       # rebuild public/files/saeed-rafieyan-cv.pdf (needs Chrome)
 npm run build        # check everything before pushing
 ```
+
+## Search engines and AI search (SEO / GEO)
+
+All of this is generated from the content above; there is nothing to maintain by hand.
+
+- **One page per paper** (`/publications/<id>/`) with the visible abstract, all authors, a ready-made
+  reference, BibTeX and Google Scholar `citation_*` tags. PDFs you upload are served from the paper's
+  own folder, as Scholar requires; the `/files/` copies (including the CV PDF) are kept out of search,
+  and the `/cv/` page is the version search engines index.
+- **Structured data** (schema.org JSON-LD): one connected graph of the site, your profile page and
+  you as a Person (ORCID, IChF's ROR ID, group, alumni institutions, research topics, profile links),
+  with every paper and project pointing back to you. Pages also carry breadcrumbs.
+- **Sitemap** (`/sitemap-index.xml`) with real last-modified dates taken from your content.
+- **IndexNow**: after each deploy, `.github/workflows/indexnow.yml` tells Bing (and so Copilot) and
+  other engines which pages changed. Google reads the sitemap instead.
+- **`/llms.txt`**: a plain-text summary of you, your projects and papers for AI tools.
+- **Weekly check** (`.github/workflows/redirect-check.yml`): emails you if the sraf.ir redirects
+  break or a search/AI crawler is blocked.
+- Clean titles and descriptions, `rel="me"` profile links, a `noindex` 404 page, and the
+  `rafieyan-xyz.vercel.app` duplicate redirects to the real domain.
 
 ## Where things live
 
@@ -107,5 +128,17 @@ more than four months old.
    Cloudflare answers it. Optionally ask the Internet Archive (info@archive.org) to remove the
    snapshot of `https://sraf.ir/assets/pdf/CV%20-%20Saeed%20Rafieyan.pdf`, and use Google Search
    Console → Removals if the old PDFs appear in search results.
-7. **Update links elsewhere**: set the website to https://rafieyan.xyz on ORCID, GitHub and Google
-   Scholar.
+7. **Update links elsewhere**: set the website to https://rafieyan.xyz on ORCID, Google Scholar,
+   GitHub, Hugging Face (profile and the TissueGPT model card), LinkedIn and X, and claim your
+   Semantic Scholar author page. Search and AI engines use these to recognise you as one person.
+8. **Search Console and Bing** (the biggest step for being found, about 30 minutes):
+   - At https://search.google.com/search-console, signed in with the Google account that owns the
+     sraf.ir property: Add property → Domain → `rafieyan.xyz`, verify with the DNS TXT record
+     (Cloudflare → rafieyan.xyz → DNS → TXT `@`). Never delete that record.
+   - Submit `https://rafieyan.xyz/sitemap-index.xml`.
+   - In the **sraf.ir** property: Settings → Change of address → rafieyan.xyz.
+   - At https://www.bing.com/webmasters: Import from Google Search Console, submit the same
+     sitemap, and use Site Move from sraf.ir.
+   - Optional: submit the main pages at https://search.brave.com/submit-url (Brave's index is
+     reportedly used by Claude's web search).
+   Keep sraf.ir registered and its redirect rule in place for at least a year.

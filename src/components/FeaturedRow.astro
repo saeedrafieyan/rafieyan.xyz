@@ -1,6 +1,6 @@
 ---
 import type { Project } from '../lib/data';
-import { getPublications, projectHasPage } from '../lib/data';
+import { getPublications, projectHasPage, pubHref } from '../lib/data';
 import Plate from './Plate.astro';
 import Status from './Status.astro';
 import InlineList from './InlineList.astro';
@@ -40,7 +40,7 @@ const versions = d.versions.map((v) => {
                 </span>
               )}
               {v.pub ? (
-                <a href={`/publications/#${v.pub.key}`}>
+                <a href={pubHref(v.pub)}>
                   {v.version} {v.year}
                 </a>
               ) : (

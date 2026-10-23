@@ -1,0 +1,45 @@
+# Weekly: confirm the old sraf.ir links still 301 to rafieyan.xyz and that search and AI
+# crawlers can reach the site. Search engines need the redirects for at least a year; a
+# lapsed domain, changed Cloudflare rule or bot setting would silently undo the migration.
+# A failure makes GitHub email you.
+name: Check redirects and crawler access
+
+on:
+  schedule:
+    - cron: '47 6 * * 1' # Mondays 06:47 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write # keep-alive step below
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep the weekly schedule alive
+        # GitHub pauses scheduled workflows in public repositories after 60 days without activity.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/redirect-check.yml/enable" || true
+      - name: Old sraf.ir URLs redirect to rafieyan.xyz
+        run: |
+          fail=0
+          for u in https://sraf.ir/ https://sraf.ir/cv/ https://sraf.ir/publications/ https://sraf.ir/blog/ http://www.sraf.ir/ \
+                   "https://sraf.ir/assets/pdf/CV%20-%20Saeed%20Rafieyan.pdf" \
+                   https://sraf.ir/assets/pdf/polymers-14-02097-v4.pdf \
+                   https://sraf.ir/assets/pdf/Process_Simulation_of_Biodiesel_Production.pdf; do
+            read -r code loc < <(curl -s -o /dev/null -m 20 -w '%{http_code} %{redirect_url}\n' "$u")
+            if [ "$code" = "301" ] && [[ "$loc" == https://rafieyan.xyz/* ]]; then echo "ok   $u → $loc"
+            else echo "FAIL $u → $code $loc (expected 301 to https://rafieyan.xyz/…)"; fail=1; fi
+          done
+          exit $fail
+      - name: Search and AI crawlers can reach the site
+        run: |
+          fail=0
+          for ua in "Googlebot/2.1 (+http://www.google.com/bot.html)" "bingbot/2.0" "OAI-SearchBot/1.0" "PerplexityBot/1.0" "Claude-SearchBot/1.0"; do
+            code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' -A "Mozilla/5.0 (compatible; $ua)" https://rafieyan.xyz/)
+            if [ "$code" = "200" ]; then echo "ok   $ua"; else echo "FAIL $ua → HTTP $code"; fail=1; fi
+          done
+          curl -s https://rafieyan.xyz/robots.txt | grep -q '^Allow: /$' && echo "ok   robots.txt allows all" || { echo "FAIL robots.txt no longer allows all"; fail=1; }
+          exit $fail

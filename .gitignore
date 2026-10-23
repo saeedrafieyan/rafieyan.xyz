@@ -7,3 +7,4 @@ dist/
 .DS_Store
 .claude/
 public/_img/
+.indexnow/

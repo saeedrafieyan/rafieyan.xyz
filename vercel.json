@@ -3,10 +3,21 @@
   "framework": "astro",
   "trailingSlash": true,
   "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "rafieyan-xyz\\.vercel\\.app" }],
+      "destination": "https://rafieyan.xyz/:path",
+      "permanent": true
+    },
     { "source": "/blog/:path*/", "destination": "/news/", "permanent": true },
     { "source": "/about/", "destination": "/", "permanent": true },
-    { "source": "/assets/pdf/polymers-14-02097-v4.pdf", "destination": "/files/fan-2022-polymers-review.pdf", "permanent": true },
-    { "source": "/assets/pdf/Process_Simulation_of_Biodiesel_Production.pdf", "destination": "/files/rafieyan-2020-biodiesel-ichec.pdf", "permanent": true },
+    { "source": "/feed.xml", "destination": "/rss.xml", "permanent": true },
+    { "source": "/sitemap.xml", "destination": "/sitemap-index.xml", "permanent": true },
+    { "source": "/files/fan-2022-polymers-review.pdf", "destination": "/publications/2022-fan-review-recent/fan-2022-polymers-review.pdf", "permanent": true },
+    { "source": "/files/rafieyan-2020-biodiesel-ichec.pdf", "destination": "/publications/2020-rafieyan-process-simulation/rafieyan-2020-biodiesel-ichec.pdf", "permanent": true },
+    { "source": "/assets/pdf/polymers-14-02097-v4.pdf", "destination": "/publications/2022-fan-review-recent/fan-2022-polymers-review.pdf", "permanent": true },
+    { "source": "/assets/pdf/Process_Simulation_of_Biodiesel_Production.pdf", "destination": "/publications/2020-rafieyan-process-simulation/rafieyan-2020-biodiesel-ichec.pdf", "permanent": true },
+    { "source": "/assets/pdf/CV(.*)", "destination": "/files/saeed-rafieyan-cv.pdf", "permanent": true },
     { "source": "/assets/pdf/:file*", "destination": "/files/saeed-rafieyan-cv.pdf", "permanent": false },
     { "source": "/assets/img/prof_pic(.*)", "destination": "/uploads/portrait.jpg", "permanent": true }
   ],
@@ -14,6 +25,14 @@
     {
       "source": "/_astro/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/files/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
+    {
+      "source": "/publications.bib",
+      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
     },
     {
       "source": "/(.*)",

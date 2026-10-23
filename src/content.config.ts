@@ -78,7 +78,7 @@ const profile = defineCollection({
     alternate_names: z.array(z.string()).default([]),
     role: z.string(),
     city: z.string(),
-    institute: z.object({ name: z.string(), short: z.string(), url: optionalUrl }),
+    institute: z.object({ name: z.string(), short: z.string(), url: optionalUrl, ror: optionalUrl }),
     group: z.object({ name: z.string(), url: optionalUrl }).optional(),
     standfirst: z.string().max(240, 'keep the standfirst under 240 characters'),
     description: optionalText,
@@ -97,6 +97,8 @@ const profile = defineCollection({
         huggingface: optionalUrl,
         x: optionalUrl,
         telegram: optionalUrl,
+        openalex: optionalUrl,
+        semanticscholar: optionalUrl,
       })
       .default({}),
     portrait: optionalImage,
@@ -131,6 +133,10 @@ const publications = defineCollection({
       data: optionalUrl,
       app: optionalUrl,
       abstract: optionalText,
+      // Optional plain-language summary shown as "In brief" on the paper's page.
+      summary: optionalText,
+      // Which version the uploaded PDF is (labels the link; matters for publisher self-archiving rules).
+      pdf_version: z.preprocess(blankToUndefined, z.enum(['published', 'accepted']).optional()),
       bibtex: optionalText,
       selected: z.boolean().default(false),
       topics: z.array(z.string()).default([]),
@@ -143,6 +149,8 @@ const projects = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/projects' }),
   schema: clean(z.object({
     title: z.string(),
+    // Expansion of an acronym title, e.g. "Machine Learning Applications in Tissue Engineering".
+    full_name: optionalText,
     status: z.enum(['active', 'maintained', 'archived']).default('active'),
     tier: z.enum(['featured', 'standard', 'minor']).default('standard'),
     order: z.number().default(50),
@@ -153,6 +161,8 @@ const projects = defineCollection({
     methods: optionalText,
     data: optionalText,
     licence: optionalText,
+    // Only for projects that no paper describes (e.g. a model or dataset with its own DOI).
+    bibtex: optionalText,
     links: z
       .object({ code: optionalUrl, app: optionalUrl, dataset: optionalUrl, model: optionalUrl, doi })
       .default({}),

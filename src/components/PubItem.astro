@@ -1,6 +1,6 @@
 ---
 import type { Publication } from '../lib/data';
-import { TYPE_LABELS } from '../lib/data';
+import { TYPE_LABELS, pubHref, pubPdfHref } from '../lib/data';
 import { compactAuthors, shortName, truncateAuthors } from '../lib/authors';
 import Status from './Status.astro';
 
@@ -14,7 +14,8 @@ interface Props {
 const { pub, mode = 'full', numbered = mode === 'full', showDoi = mode === 'full', headingLevel = 'h3' } = Astro.props;
 const d = pub.data;
 const Heading = headingLevel;
-const href = d.doi ? `https://doi.org/${d.doi}` : (d.url ?? d.pdf);
+const href = pubHref(pub);
+const pdf = pubPdfHref(pub);
 const underReview = d.status === 'under-review';
 const isThesis = d.type === 'thesis';
 
@@ -106,7 +107,7 @@ const shortTitle = d.title.length > 60 ? `${d.title.slice(0, 57)}…` : d.title;
     {
       mode === 'full' && (d.pdf || d.code || d.data || d.app || d.abstract || pub.bibtex) && (
         <div class="pub-links">
-          {d.pdf && <a href={d.pdf}>PDF</a>}
+          {pdf && <a href={pdf}>{d.pdf_version === 'accepted' ? 'PDF (accepted manuscript)' : 'PDF'}</a>}
           {d.code && <a href={d.code}>Code</a>}
           {d.data && <a href={d.data}>Data</a>}
           {d.app && <a href={d.app}>App</a>}

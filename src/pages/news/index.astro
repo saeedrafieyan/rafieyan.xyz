@@ -1,8 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
 import NewsItem from '../../components/NewsItem.astro';
-import { getNews } from '../../lib/data';
+import { getNews, getProfile } from '../../lib/data';
 
+const { data: profile } = await getProfile();
 const news = await getNews();
 const years = new Map<number, typeof news>();
 for (const n of news) {
@@ -11,7 +12,10 @@ for (const n of news) {
 }
 ---
 
-<Base title="News" description="Papers, releases and other news.">
+<Base
+  title="News"
+  description={`Papers, software releases and other news from ${profile.name} (${profile.role}, ${profile.institute.short}).`}
+>
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">

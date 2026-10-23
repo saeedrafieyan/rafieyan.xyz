@@ -8,6 +8,7 @@ institute:
   name: Institute of Physical Chemistry, Polish Academy of Sciences
   short: IChF PAN
   url: https://ichf.edu.pl/en
+  ror: https://ror.org/05e830h62
 group:
   name: Digital Manufacturing of Biomimetic Systems group
   url: https://www.dmbslab.com/
@@ -30,6 +31,8 @@ profiles:
   scopus: https://www.scopus.com/authid/detail.uri?authorId=57703210600
   huggingface: https://huggingface.co/Saeed
   x: https://x.com/SaeedRafieyan
+  openalex: https://openalex.org/A5071984162
+  semanticscholar: https://www.semanticscholar.org/author/2166018622
 portrait:
   image: /uploads/portrait.jpg
   alt: Portrait of Saeed Rafieyan

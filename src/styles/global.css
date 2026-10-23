@@ -538,7 +538,7 @@ main {
 /* ---------- Status label ---------- */
 .status {
   display: inline-block;
-  margin-left: 0.5em;
+  margin-left: 0.25em;
   padding: 0.125rem 0.375rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -896,7 +896,8 @@ main {
   max-width: 44rem;
 }
 
-.bibtex-panel .copy-row {
+.bibtex-panel .copy-row,
+.copy-panel .copy-row {
   display: flex;
   justify-content: flex-end;
   margin-bottom: var(--space-2xs);

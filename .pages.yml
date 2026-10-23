@@ -76,6 +76,7 @@ content:
           - { name: name, label: Full name, type: string, required: true }
           - { name: short, label: Short name, type: string, required: true, description: 'e.g. IChF PAN' }
           - { name: url, label: Website, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
+          - { name: ror, label: ROR ID (https://ror.org/…), type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - name: group
         label: Research group
         type: object
@@ -111,6 +112,8 @@ content:
           - { name: huggingface, label: Hugging Face, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
           - { name: x, label: X / Twitter, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
           - { name: telegram, label: Telegram, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
+          - { name: openalex, label: OpenAlex, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
+          - { name: semanticscholar, label: Semantic Scholar, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - name: portrait
         label: Portrait
         type: object
@@ -198,10 +201,18 @@ content:
       - { name: doi, label: DOI, type: string, description: 'Just the DOI, e.g. 10.1088/1758-5090/ad6374 (a doi.org link also works).' }
       - { name: url, label: Article URL, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - { name: pdf, label: PDF, type: file, options: { media: files } }
+      - name: pdf_version
+        label: PDF version
+        type: select
+        options:
+          values:
+            - { name: published, label: Published version }
+            - { name: accepted, label: Accepted manuscript }
       - { name: code, label: Code URL, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - { name: data, label: Data URL, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - { name: app, label: App URL, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
       - { name: abstract, label: Abstract, type: text }
+      - { name: summary, label: 'In brief (optional plain-language summary for the paper page)', type: text }
       - { name: selected, label: Show on the home page, type: boolean }
       - name: topics
         label: Topic tags
@@ -229,6 +240,7 @@ content:
       default: { sort: order, order: asc }
     fields:
       - { name: title, label: Title, type: string, required: true }
+      - { name: full_name, label: Full name (if the title is an acronym), type: string }
       - name: tier
         label: Placement
         type: select
@@ -258,6 +270,7 @@ content:
       - { name: methods, label: Methods, type: string }
       - { name: data, label: Data, type: string }
       - { name: licence, label: Licence, type: string }
+      - { name: bibtex, label: 'Custom BibTeX (only if no paper describes this project)', type: text }
       - name: links
         label: Links
         type: object
@@ -283,7 +296,7 @@ content:
           - { name: year, label: Year, type: number, required: true }
           - { name: scope, label: Scope, type: string, required: true }
           - { name: publication, label: Publication file name (without .yaml), type: string }
-      - { name: body, label: Project page text (leave empty for no page), type: rich-text, options: { media: images } }
+      - { name: body, label: 'Project page text (featured projects always get a page; for others, leave empty for no page)', type: rich-text, options: { media: images } }
 
   # ---------------------------------------------------------------- News
   - name: news

@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import PubItem from '../../components/PubItem.astro';
 import InlineList from '../../components/InlineList.astro';
 import { getProfile, getPublications, TYPE_LABELS } from '../../lib/data';
+import { articleLd } from '../../lib/jsonld';
 
 const { data: profile } = await getProfile();
 const pubs = await getPublications();
@@ -47,17 +48,10 @@ const years = [...new Set(pubs.map((p) => p.data.year))].sort((a, b) => b - a);
 const topicNames = new Map(profile.focus.filter((f) => f.topic).map((f) => [f.topic!, f.term]));
 const topics = [...new Set(pubs.flatMap((p) => p.data.topics))].filter((t) => topicNames.has(t));
 
-const jsonLd = pubs
-  .filter((p) => p.data.status !== 'under-review')
-  .map((p) => ({
-    '@context': 'https://schema.org',
-    '@type': p.data.type === 'thesis' ? 'Thesis' : 'ScholarlyArticle',
-    headline: p.data.title,
-    author: p.authors.map((a) => ({ '@type': 'Person', name: a.full })),
-    datePublished: p.data.date ?? String(p.data.year),
-    ...(p.data.venue && p.data.type !== 'thesis' ? { isPartOf: { '@type': 'Periodical', name: p.data.venue } } : {}),
-    ...(p.data.doi ? { sameAs: `https://doi.org/${p.data.doi}` } : {}),
-  }));
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': pubs.filter((p) => p.data.status !== 'under-review').map((p) => articleLd(p, Astro.site!, profile.name)),
+};
 ---
 
 <Base title="Publications" description={`Publications by ${profile.name}: ${standfirst}.`} jsonLd={jsonLd}>

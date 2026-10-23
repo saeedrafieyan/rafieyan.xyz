@@ -1,0 +1,43 @@
+# After each successful production deploy on Vercel, notify IndexNow engines (Bing and
+# through it Copilot, Yandex, Seznam, Naver, …) about pages whose content changed.
+# Vercel reports deploys as commit statuses (context "Vercel"), not GitHub Deployments.
+name: IndexNow
+
+on:
+  status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  ping:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.context == 'Vercel' && github.event.state == 'success' &&
+       contains(github.event.branches.*.name, 'main'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/cache/restore@v6
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
+          restore-keys: indexnow-
+      - name: Wait for the production alias to switch
+        run: sleep 30
+      - name: Notify IndexNow
+        run: node scripts/indexnow.mjs
+      - uses: actions/cache/save@v6
+        if: success()
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}

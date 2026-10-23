@@ -11,10 +11,12 @@ interface Props {
   description?: string;
   type?: 'website' | 'article' | 'profile';
   jsonLd?: object | object[];
+  /** Keep this page out of search results (e.g. the 404 page). */
+  noindex?: boolean;
 }
 
 const { data: profile } = await getProfile();
-const { title, description, type = 'website', jsonLd } = Astro.props;
+const { title, description, type = 'website', jsonLd, noindex = false } = Astro.props;
 const fullTitle = title ? `${title} — ${profile.name}` : `${profile.name} — machine learning for tissue engineering`;
 const desc = description ?? profile.description ?? profile.standfirst;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -32,7 +34,7 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
     <title>{fullTitle}</title>
     <meta name="description" content={desc} />
     <meta name="author" content={profile.name} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)" />
@@ -43,9 +45,9 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
 
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content={profile.name} />
-    <meta property="og:title" content={title ?? profile.name} />
+    <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={desc} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -62,7 +64,12 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
     {newsreaderLatin && <link rel="preload" href={newsreaderLatin} as="font" type="font/woff2" crossorigin />}
     <Font cssVariable="--font-newsreader" />
     <Font cssVariable="--font-plex" />
-    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
+    <slot name="head" />
+    {
+      (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).map((ld) => (
+        <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, '\\u003c')} />
+      ))
+    }
   </head>
   <body>
     <a class="skip-link" href="#content">Skip to content</a>
@@ -124,18 +131,19 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
       media.addEventListener('change', sync);
       sync();
 
-      // Copy BibTeX
+      // Copy buttons: BibTeX panels and the CV's short bio
       if (navigator.clipboard) {
         for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
           button.hidden = false;
           button.addEventListener('click', async () => {
-            const text = button.closest('.bibtex-panel')?.querySelector('pre')?.textContent ?? '';
+            const panel = button.closest('.bibtex-panel, .copy-panel');
+            const text = (panel?.querySelector('[data-copy-source], pre')?.textContent ?? '').trim();
             try {
               await navigator.clipboard.writeText(text);
               button.textContent = 'Copied';
-              if (announcer) announcer.textContent = 'BibTeX copied to clipboard';
+              if (announcer) announcer.textContent = 'Copied to clipboard';
               setTimeout(() => {
-                button.textContent = 'Copy BibTeX';
+                button.textContent = button.dataset.copyLabel ?? 'Copy BibTeX';
                 if (announcer) announcer.textContent = '';
               }, 2000);
             } catch {

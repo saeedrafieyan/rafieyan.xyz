@@ -9,6 +9,7 @@ export const GET: APIRoute = async ({ site }) => {
     title: `${profile.name} — news`,
     description: profile.standfirst,
     site: site!,
+    customData: '<language>en</language>',
     items: news.map((n) => ({
       title: n.data.title ?? n.data.text,
       description: n.data.description ?? n.data.text,

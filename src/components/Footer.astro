@@ -14,6 +14,8 @@ const elsewhere = [
   { label: 'Scopus', href: p.profiles.scopus },
   { label: 'X', href: p.profiles.x },
   { label: 'Telegram', href: p.profiles.telegram },
+  { label: 'OpenAlex', href: p.profiles.openalex },
+  { label: 'Semantic Scholar', href: p.profiles.semanticscholar },
 ].filter((l) => l.href);
 ---
 
@@ -30,7 +32,9 @@ const elsewhere = [
         {
           elsewhere.map((l) => (
             <li>
-              <a href={l.href}>{l.label}</a>
+              <a href={l.href} rel="me">
+                {l.label}
+              </a>
             </li>
           ))
         }

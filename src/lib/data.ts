@@ -1,5 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { execSync } from 'node:child_process';
+import path from 'node:path';
 import { parseAuthor, type Author } from './authors';
 import { baseKey, toBibtex } from './bibtex';
 import { daysSince, partialKey } from './dates';
@@ -54,6 +55,10 @@ export async function getProfile(): Promise<Profile> {
 
 export const ownerNames = (p: Profile) => [p.data.name, ...p.data.alternate_names];
 
+/** Full alternative spellings worth showing (drops initials-only forms such as "Rafieyan, S."). */
+export const displayNameVariants = (p: Profile) =>
+  p.data.alternate_names.filter((n) => parseAuthor(n).given.replace(/[.\s-]/g, '').length > 1);
+
 let pubCache: Publication[] | undefined;
 
 /** All publications, newest first, with numbering, BibTeX keys and owner checks. */
@@ -70,6 +75,9 @@ export async function getPublications(): Promise<Publication[]> {
         `Publication "${e.id}": none of the authors matches ${names.join(' / ')}. ` +
           `Check the spelling, or add the variant to alternate_names in the profile.`,
       );
+    }
+    if (e.data.status !== 'under-review' && !e.data.abstract && !e.data.pdf) {
+      warn(`Publication "${e.id}" has neither an abstract nor a PDF, so it gets no page of its own and Google Scholar can't index it.`);
     }
     if (!e.data.venue && e.data.status !== 'under-review') {
       warn(`Publication "${e.id}" has no journal / venue; add one in Publications → ${e.data.title.slice(0, 40)}…`);
@@ -131,7 +139,22 @@ export async function getProjects(): Promise<Project[]> {
   );
 }
 
-export const projectHasPage = (p: Project) => Boolean(p.body?.trim());
+/** Featured projects always get a page; others only when they have page text. */
+export const projectHasPage = (p: Project) => Boolean(p.body?.trim()) || p.data.tier === 'featured';
+
+/**
+ * Each paper with an abstract or a PDF gets its own page (/publications/<id>/): one URL per
+ * paper with a visible abstract is what Google Scholar indexes and what search engines can cite.
+ */
+export const pubHasPage = (p: Publication) => p.data.status !== 'under-review' && Boolean(p.data.abstract || p.data.pdf);
+
+/** Where a paper's title links: its own page, else the DOI, article URL or PDF. */
+export const pubHref = (p: Publication) =>
+  pubHasPage(p) ? `/publications/${p.id}/` : p.data.doi ? `https://doi.org/${p.data.doi}` : (p.data.url ?? p.data.pdf);
+
+/** Site-hosted PDFs are served from the paper's own folder (Scholar wants them next to the abstract page). */
+export const pubPdfHref = (p: Publication) =>
+  p.data.pdf?.startsWith('/files/') && pubHasPage(p) ? `/publications/${p.id}/${path.basename(p.data.pdf)}` : p.data.pdf;
 
 export async function getNews(): Promise<NewsItem[]> {
   return (await getCollection('news', (n) => !n.data.draft)).sort(

@@ -1,6 +1,10 @@
 // @ts-check
 import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { contentLastmod } from './src/lib/lastmod.mjs';
+
+// Sitemap <lastmod> from content dates (Bing and Google use it only when it reflects real changes).
+const LASTMOD = contentLastmod();
 
 // Variable fonts self-hosted from the @fontsource-variable npm packages (latin + latin-ext).
 const LATIN =
@@ -26,7 +30,16 @@ const variants = (pkg, file, weight, styles) =>
 export default defineConfig({
   site: 'https://rafieyan.xyz',
   trailingSlash: 'always',
-  integrations: [sitemap({ filter: (page) => !page.endsWith('/404/') })],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.endsWith('/404/'),
+      serialize(item) {
+        const date = LASTMOD[new URL(item.url).pathname];
+        if (date) item.lastmod = date;
+        return item;
+      },
+    }),
+  ],
   fonts: [
     {
       provider: fontProviders.local(),

@@ -1,5 +1,6 @@
 ---
 title: MLATE
+full_name: Machine Learning Applications in Tissue Engineering
 tier: featured
 status: active
 order: 1

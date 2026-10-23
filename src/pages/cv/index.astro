@@ -5,10 +5,12 @@ import Base from '../../layouts/Base.astro';
 import CvEntry from '../../components/CvEntry.astro';
 import PubItem from '../../components/PubItem.astro';
 import InlineList from '../../components/InlineList.astro';
-import { displayUrl, getCv, getProfile, getProjects, getPublications } from '../../lib/data';
+import { displayNameVariants, displayUrl, getCv, getProfile, getProjects, getPublications } from '../../lib/data';
 import { dayMonthYear, isoDay } from '../../lib/dates';
 
-const { data: p } = await getProfile();
+const profile = await getProfile();
+const { data: p } = profile;
+const variants = displayNameVariants(profile);
 const { data: cv } = await getCv();
 const pubs = await getPublications();
 const published = pubs.filter((x) => x.data.status !== 'under-review');
@@ -40,12 +42,13 @@ const sections = [
 ].filter((s) => s.show);
 ---
 
-<Base title="CV" description={`Curriculum vitae of ${p.name}, ${p.role} at ${p.institute.name}.`}>
+<Base title={`CV: ${p.role}, ${p.institute.short}`} description={`Curriculum vitae of ${p.name}, ${p.role} at ${p.institute.name}.`}>
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">
         <p class="kicker">Curriculum vitae</p>
         <h1 class="page-title">{p.name}</h1>
+        {variants.length > 0 && <p class="meta-line">Also listed as {variants.join(', ')}</p>}
         <p class="meta-line">
           {p.role}, {p.group ? `${p.group.name}, ` : ''}{p.institute.name}, {p.city}
           <br />
@@ -75,6 +78,24 @@ const sections = [
         />
       </div>
     </header>
+
+    {
+      p.description && (
+        <section class="with-margin no-print" aria-labelledby="bio">
+          <h2 class="section-head margin" id="bio">
+            Short bio
+          </h2>
+          <div class="main copy-panel">
+            <p data-copy-source>{p.description}</p>
+            <div class="copy-row">
+              <button type="button" class="btn btn-small" data-copy data-copy-label="Copy bio" hidden>
+                Copy bio
+              </button>
+            </div>
+          </div>
+        </section>
+      )
+    }
 
     {
       cv.education.length > 0 && (

@@ -1,0 +1,212 @@
+---
+// One page per paper: a single citable URL with the visible abstract, full author list,
+// Google Scholar (Highwire Press) citation_* tags, a ready-made reference and BibTeX.
+import type { GetStaticPaths } from 'astro';
+import Base from '../../../layouts/Base.astro';
+import InlineList from '../../../components/InlineList.astro';
+import Status from '../../../components/Status.astro';
+import {
+  getProfile,
+  getProjects,
+  getPublications,
+  projectHasPage,
+  pubHasPage,
+  pubHref,
+  pubPdfHref,
+  TYPE_LABELS,
+  type Publication,
+} from '../../../lib/data';
+import { formatPartial } from '../../../lib/dates';
+import { articleLd, breadcrumbs } from '../../../lib/jsonld';
+import { vancouver } from '../../../lib/cite';
+
+export const getStaticPaths = (async () => {
+  const pubs = await getPublications();
+  return pubs.filter(pubHasPage).map((pub) => ({ params: { id: pub.id }, props: { pub } }));
+}) satisfies GetStaticPaths;
+
+const { pub } = Astro.props as { pub: Publication };
+const d = pub.data;
+const site = Astro.site!;
+const { data: profile } = await getProfile();
+const pdf = pubPdfHref(pub);
+const pageUrl = new URL(`/publications/${pub.id}/`, site).href;
+
+// Projects this paper belongs to, and the version lineage it is part of.
+const projects = (await getProjects()).filter(
+  (p) => d.projects.includes(p.id) || p.data.versions.some((v) => v.publication === pub.id),
+);
+const pubs = await getPublications();
+const lineage = projects
+  .filter((p) => p.data.versions.some((v) => v.publication === pub.id))
+  .map((p) => ({ project: p, versions: p.data.versions.map((v) => ({ ...v, pub: pubs.find((x) => x.id === v.publication) })) }));
+
+const details = [d.volume && (d.issue ? `${d.volume}(${d.issue})` : d.volume), d.pages].filter(Boolean).join(', ');
+const firstSentence = d.abstract?.match(/^.{40,}?[.!?](\s|$)/)?.[0].trim() ?? d.abstract?.slice(0, 160);
+const description = [`${d.venue ?? TYPE_LABELS[d.type]}, ${d.year}.`, d.summary ?? firstSentence].filter(Boolean).join(' ');
+
+// citation_* tags (https://scholar.google.com/intl/en/scholar/inclusion.html)
+const school = d.type === 'thesis' ? d.venue?.replace(/^(msc|phd|master'?s|doctoral)\s+thesis,\s*/i, '') : undefined;
+const [firstPage, lastPage] = (d.pages ?? '').split(/\s*[–—-]+\s*/);
+const citation: [string, string | undefined][] = [
+  ['citation_title', d.title],
+  ...pub.authors.map((a): [string, string] => ['citation_author', a.given ? `${a.family}, ${a.given}` : a.family]),
+  // Scholar accepts a full date (2010/5/12) or the year alone, not year/month.
+  ['citation_publication_date', d.date && /^\d{4}-\d{2}-\d{2}$/.test(d.date) && d.date.startsWith(String(d.year)) ? d.date.replaceAll('-', '/') : String(d.year)],
+  [
+    d.type === 'conference' ? 'citation_conference_title' : d.type === 'chapter' ? 'citation_inbook_title' : d.type === 'thesis' ? 'citation_dissertation_institution' : 'citation_journal_title',
+    d.type === 'thesis' ? school : d.venue,
+  ],
+  ['citation_volume', d.volume],
+  ['citation_issue', d.issue],
+  ['citation_firstpage', firstPage || undefined],
+  ['citation_lastpage', lastPage || undefined],
+  ['citation_doi', d.doi],
+  ['citation_pdf_url', pdf?.startsWith('/') ? new URL(pdf, site).href : undefined],
+  ['citation_abstract_html_url', pageUrl],
+  ['citation_language', 'en'],
+];
+
+const jsonLd = [
+  articleLd(pub, site, profile.name, true),
+  breadcrumbs(site, [
+    { name: profile.name, path: '/' },
+    { name: 'Publications', path: '/publications/' },
+    { name: d.title, path: `/publications/${pub.id}/` },
+  ]),
+];
+---
+
+<Base title={d.title} description={description} type="article" jsonLd={jsonLd}>
+  <Fragment slot="head">
+    {citation.filter(([, v]) => v).map(([name, content]) => <meta name={name} content={content} />)}
+  </Fragment>
+
+  <article class="page-grid">
+    <header class="with-margin">
+      <div class="main">
+        <p class="kicker">
+          {TYPE_LABELS[d.type]} · <time datetime={d.date ?? String(d.year)}>{formatPartial(d.date) || d.year}</time>
+          <Status status={d.status} />
+        </p>
+        <h1 class="page-title">{d.title}</h1>
+        <p class="pub-authors" style="margin-top: var(--space-s)">
+          {pub.authors.map((a, i) => (
+            <>
+              {i > 0 && ', '}
+              {a.isOwner ? (
+                <strong>
+                  <a href="/">{a.full}</a>
+                </strong>
+              ) : (
+                a.full
+              )}
+              {a.corresponding && <sup>*</sup>}
+              {a.equal && <sup>†</sup>}
+            </>
+          ))}
+        </p>
+        <p class="pub-venue">
+          {d.venue && <span class="journal">{d.venue}</span>}
+          {details && <span>{', '}{details}</span>}
+          <span>{' · '}{d.year}</span>
+          {
+            d.doi && (
+              <span>
+                {' · '}
+                <a class="doi" href={`https://doi.org/${d.doi}`} data-doi>
+                  doi:{d.doi}
+                </a>
+              </span>
+            )
+          }
+        </p>
+        <InlineList
+          class="project-links"
+          label="Links"
+          links={[
+            { label: 'Read the article', href: d.doi ? `https://doi.org/${d.doi}` : d.url },
+            { label: d.pdf_version === 'accepted' ? 'PDF (accepted manuscript)' : 'PDF', href: pdf },
+            { label: 'Code', href: d.code },
+            { label: 'Data', href: d.data },
+            { label: 'App', href: d.app },
+            ...projects.filter(projectHasPage).map((p) => ({ label: `${p.data.title} project page`, href: `/projects/${p.id}/` })),
+          ]}
+        />
+      </div>
+    </header>
+
+    {
+      d.summary && (
+        <section class="with-margin" aria-labelledby="in-brief">
+          <h2 class="section-head margin" id="in-brief">
+            In brief
+          </h2>
+          <div class="main prose">
+            <p>{d.summary}</p>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.abstract && (
+        <section class="with-margin" aria-labelledby="abstract">
+          <h2 class="section-head margin" id="abstract">
+            Abstract
+          </h2>
+          <div class="main prose">
+            <p>{d.abstract}</p>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      lineage.map(({ project, versions }) => (
+        <section class="with-margin" aria-labelledby={`part-of-${project.id}`}>
+          <h2 class="section-head margin" id={`part-of-${project.id}`}>
+            Part of {project.data.title}
+          </h2>
+          <div class="main">
+            <ol class="cv-plain">
+              {versions.map((v) => (
+                <li>
+                  <b>
+                    {v.version} ({v.year})
+                  </b>
+                  {' · '}
+                  {v.scope}
+                  {v.pub &&
+                    (v.pub.id === pub.id ? (
+                      <span class="muted"> · this paper</span>
+                    ) : (
+                      <>
+                        {' · '}
+                        <a href={pubHref(v.pub)}>{v.pub.data.venue}</a>
+                      </>
+                    ))}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="with-margin" aria-labelledby="cite">
+      <h2 class="section-head margin" id="cite">Cite</h2>
+      <div class="main bibtex-panel">
+        <p>{vancouver(pub)}</p>
+        <div class="copy-row">
+          <button type="button" class="btn btn-small" data-copy hidden>Copy BibTeX</button>
+        </div>
+        <pre role="region" tabindex="0" aria-label="BibTeX">{pub.bibtex}</pre>
+      </div>
+    </section>
+
+    <p class="with-margin section-foot no-print">
+      <span class="main"><a href="/publications/">← All publications</a></span>
+    </p>
+  </article>
+</Base>

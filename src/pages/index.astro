@@ -6,7 +6,9 @@ import InlineList from '../components/InlineList.astro';
 import PubItem from '../components/PubItem.astro';
 import FeaturedRow from '../components/FeaturedRow.astro';
 import NewsItem from '../components/NewsItem.astro';
-import { getNews, getProfile, getProjects, getPublications, topicCounts } from '../lib/data';
+import { getCv, getNews, getProfile, getProjects, getPublications, topicCounts } from '../lib/data';
+import { homeGraph } from '../lib/jsonld';
+import { contentLastmod } from '../lib/lastmod.mjs';
 import { formatPartial } from '../lib/dates';
 import { responsive } from '../lib/images';
 
@@ -24,19 +26,8 @@ const recent = news.slice(0, 5);
 const counts = await topicCounts();
 const portrait = p.portrait ? responsive(p.portrait.image) : undefined;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: p.name,
-  alternateName: p.alternate_names,
-  url: Astro.site?.href,
-  image: p.portrait ? new URL(p.portrait.image, Astro.site).href : undefined,
-  jobTitle: p.role,
-  email: `mailto:${p.email}`,
-  affiliation: { '@type': 'Organization', name: p.institute.name, url: p.institute.url },
-  sameAs: Object.values(p.profiles).filter(Boolean),
-  knowsAbout: p.focus.map((f) => f.term),
-};
+const { data: cv } = await getCv();
+const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/']);
 ---
 
 <Base type="profile" jsonLd={jsonLd}>

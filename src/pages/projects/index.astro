@@ -1,14 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectEntry from '../../components/ProjectEntry.astro';
-import { getProjects, projectHasPage } from '../../lib/data';
+import { getProfile, getProjects, projectHasPage } from '../../lib/data';
 
+const { data: profile } = await getProfile();
 const projects = await getProjects();
 const main = projects.filter((p) => p.data.tier !== 'minor');
 const minor = projects.filter((p) => p.data.tier === 'minor');
 ---
 
-<Base title="Projects" description="Models, datasets and tools for tissue engineering and biofabrication.">
+<Base
+  title="Projects"
+  description={`Models, datasets and tools by ${profile.name} for tissue engineering and biofabrication: ${main.map((p) => p.data.title).join(', ')}.`}
+>
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">

@@ -6,4 +6,11 @@ interface Props {
 const label = STATUS_LABELS[Astro.props.status] ?? (Astro.props.status === 'published' ? '' : Astro.props.status);
 ---
 
-{label && <span class="status">{label}</span>}
+{
+  label && (
+    <>
+      {' '}
+      <span class="status">{label}</span>
+    </>
+  )
+}
