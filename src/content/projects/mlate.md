@@ -19,11 +19,12 @@ links:
   code: https://github.com/saeedrafieyan/MLATE
   app: https://huggingface.co/spaces/Saeed/MLATE
 figure:
-  image: /uploads/mlate-v2-pipeline.png
-  alt: Diagram of the MLATE pipeline from literature data gathering and cleaning,
-    to dataset creation, to clustering, machine learning and deep learning
-    models.
-  caption: From literature to dataset to models (MLATE V2).
+  image: /uploads/figworkflowoverviewv4for-paper.png
+  alt: The MLATE V3 pipeline. Phase A is built once from the literature corpus,
+    including data gathering, data imputation, clustering, classification, and
+    WSSQ definition. Phase B runs for each user query, including web app
+    development, bioink  optimization, and protocol generation.
+  caption: From literature to dataset to models (MLATE V3).
 versions:
   - version: V1
     year: 2023
