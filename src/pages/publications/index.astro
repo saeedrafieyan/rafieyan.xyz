@@ -45,7 +45,10 @@ const filterLabels: Record<string, string> = {
   'under-review': 'Under review',
 };
 const years = [...new Set(pubs.map((p) => p.data.year))].sort((a, b) => b - a);
-const topicNames = new Map(profile.focus.filter((f) => f.topic).map((f) => [f.topic!, f.term]));
+// Topic names come from the home page's research themes and other research collaborations.
+const topicNames = new Map(
+  [...profile.focus, ...profile.other_research].filter((f) => f.topic).map((f) => [f.topic!, f.term]),
+);
 const topics = [...new Set(pubs.flatMap((p) => p.data.topics))].filter((t) => topicNames.has(t));
 
 const jsonLd = {

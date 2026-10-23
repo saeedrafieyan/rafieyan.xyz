@@ -1,25 +1,33 @@
-updated: 2026-10-21
+updated: 2026-10-24
 research:
+  - role: PhD researcher – Digital Manufacturing of Biomimetic Systems group
+    org: Institute of Physical Chemistry, Polish Academy of Sciences (IChF PAN)
+    org_url: https://ichf.edu.pl/en/groups/digital-manufacturing-of-biomimetic-systems
+    place: Warsaw, Poland
+    start: 2026-01
+    bullets:
+      - Developing computational approaches that connect design requirements with candidate scaffold structures, with applications in regenerative medicine and wound healing.
   - role: Research assistant – data scientist
-    org: Jiangnan University, Dr. Madadi’s group
+    org: Jiangnan University, Dr Madadi’s group
     place: Wuxi, China
     start: 2025-01
     bullets:
-      - Machine-learning and deep-learning models for biofuel production and process optimisation, resulting in peer-reviewed publications.
+      - Machine-learning and deep-learning models for biofuel production and process optimisation, contributing to a peer-reviewed article in Bioresource Technology (2025).
   - role: Research assistant – data scientist
-    org: Tarbiat Modares University, Dr. Fakhroleslam’s group
+    org: Tarbiat Modares University, Dr Fakhroleslam’s group
     place: Tehran, Iran
     start: 2023-09
     end: 2025-12
     bullets:
       - Machine-learning and deep-learning models for distillation and separation processes; chemical-engineering text mining.
   - role: Research assistant – data scientist
-    org: Tarbiat Modares University, Prof. Vasheghani-Farahani’s group
+    org: Tarbiat Modares University, Prof Vasheghani-Farahani’s group
     place: Tehran, Iran
     start: 2019-01
     end: 2025-12
     bullets:
-      - Developed and led AI-driven research projects, including MLATE (three versions, web app at mlate.ir) and TissueGPT, a language model fine-tuned on tissue-engineering literature.
+      - Led the development of MLATE through three published versions as first author, including its literature-derived datasets and web app (mlate.ir).
+      - Developed TissueGPT, a language model adapted to tissue-engineering literature, released on Hugging Face.
   - role: Data scientist
     org: Men’s Health & Reproductive Health Research Centre, Shohadaye Tajrish Hospital
     place: Tehran, Iran
@@ -33,9 +41,9 @@ education:
     org_url: https://ichf.edu.pl/en/groups/digital-manufacturing-of-biomimetic-systems
     place: Warsaw, Poland
     start: 2026-01
-    thesis: Inverse design-assisted biodegradable modular dressings for negative pressure wound healing
     bullets:
       - Digital Manufacturing of Biomimetic Systems group.
+      - 'Research topic: computational inverse design for biodegradable wound dressings.'
   - role: MSc in Chemical Engineering – Biomedical Engineering
     org: Tarbiat Modares University
     org_url: https://en.modares.ac.ir/
@@ -84,7 +92,7 @@ skills:
     items: Regression, classification, clustering, feature engineering, model selection, Bayesian optimisation, gradient boosting (XGBoost, LightGBM, CatBoost), scikit-learn
   - group: Deep learning and NLP
     items: PyTorch, TensorFlow, Hugging Face Transformers, CNNs, RNNs, multimodal learning, LLM fine-tuning, text mining, topic modelling
-  - group: Software and data
+  - group: Programming and tools
     items: Python, NumPy, pandas, Matplotlib, Plotly, Dash, Streamlit, Flask, FastAPI, Docker, GitHub Actions, PostgreSQL, MySQL, SQLite
   - group: Laboratory
     items: Cell culture, MTT assay, decellularisation, hydrogel preparation, scaffold fabrication, 3D printing, freeze-drying

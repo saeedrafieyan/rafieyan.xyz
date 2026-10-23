@@ -1,6 +1,6 @@
 ---
 import type { Project } from '../lib/data';
-import { projectHasPage } from '../lib/data';
+import { projectHasPage, projectStatusLabel, projectYears } from '../lib/data';
 import Plate from './Plate.astro';
 import Status from './Status.astro';
 import InlineList from './InlineList.astro';
@@ -12,12 +12,10 @@ const { project } = Astro.props;
 const d = project.data;
 const hasPage = projectHasPage(project);
 const href = hasPage ? `/projects/${project.id}/` : (d.links.code ?? d.links.app ?? d.links.model);
-const years = d.years.end ? `${d.years.start}–${d.years.end}` : `${d.years.start}–present`;
+// Methods and data stay on the project's own page, so every entry here is the same short shape.
 const facts = [
   ['Role', d.role],
-  ['Years', years],
-  ['Methods', d.methods],
-  ['Data', d.data],
+  ['Years', projectYears(project)],
   ['Licence', d.licence],
 ].filter(([, v]) => v);
 ---
@@ -25,22 +23,25 @@ const facts = [
 <article class="project" id={project.id}>
   <h3 class="project-title">
     {href ? <a href={href}>{d.title}</a> : d.title}
-    <Status status={d.status} />
+    <Status label={projectStatusLabel(project)} />
   </h3>
+  {d.full_name && <p class="project-fullname">{d.full_name}</p>}
   <div class:list={['project-body', { 'has-figure': d.figure }]} style="margin-top: var(--space-xs)">
-    {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} />}
+    {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} zoom />}
     <div>
       <p class="project-summary">{d.summary}</p>
-      <dl class="facts">
-        {
-          facts.map(([k, v]) => (
-            <>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </>
-          ))
-        }
-      </dl>
+      {
+        facts.length > 0 && (
+          <dl class="facts">
+            {facts.map(([k, v]) => (
+              <>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </>
+            ))}
+          </dl>
+        )
+      }
       <InlineList
         class="project-links"
         label={`${d.title} links`}

@@ -58,7 +58,7 @@ export function toBibtex(p: BibSource): string {
     ['pages', p.pages?.replace(/[–—]/g, '--')],
     ['doi', p.doi],
     ['url', p.doi ? undefined : p.url],
-    ['note', p.status === 'in-press' ? 'In press' : p.status === 'under-review' ? 'Manuscript under review' : undefined],
+    ['note', p.status === 'ahead-of-print' ? 'Online ahead of print' : p.status === 'in-press' ? 'In press' : p.status === 'under-review' ? 'Manuscript under review' : undefined],
   ];
   const body = fields
     .filter(([, v]) => v)

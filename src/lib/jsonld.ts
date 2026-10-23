@@ -2,7 +2,7 @@
 // that is also visible on the page; the person is one @id that papers and projects point to.
 import { parseAuthor } from './authors';
 import type { Profile, Project, Publication } from './data';
-import { displayNameVariants, pubHasPage, pubPdfHref } from './data';
+import { displayNameVariants, homeTitle, pubHasPage, pubPdfHref } from './data';
 
 type Node = Record<string, unknown>;
 
@@ -85,7 +85,7 @@ export function homeGraph(profile: Profile, site: URL, education: Education[], d
         '@type': 'ProfilePage',
         '@id': abs('/#profile', site),
         url: site.href,
-        name: `${profile.data.name} — ${profile.data.role}, ${profile.data.institute.short}`,
+        name: homeTitle(profile),
         isPartOf: { '@id': WEBSITE_ID(site) },
         mainEntity: { '@id': PERSON_ID(site) },
         dateModified,
@@ -114,20 +114,24 @@ export function articleLd(pub: Publication, site: URL, ownerName: string, withCo
     datePublished: d.date ?? String(d.year),
     abstract: d.abstract,
     author: pub.authors.map((a) => (a.isOwner ? personRef(site, ownerName) : { '@type': 'Person', name: a.full })),
+    // Online-ahead-of-print papers have no volume yet: point straight at the journal.
     isPartOf:
       d.venue && (d.type === 'article' || d.type === 'review')
-        ? clean({ '@type': 'PublicationVolume', volumeNumber: d.volume, isPartOf: { '@type': 'Periodical', name: d.venue } })
+        ? d.volume
+          ? { '@type': 'PublicationVolume', volumeNumber: d.volume, isPartOf: { '@type': 'Periodical', name: d.venue } }
+          : { '@type': 'Periodical', name: d.venue }
         : undefined,
     ...(d.type === 'thesis' && d.venue ? { inSupportOf: d.venue } : {}),
     pagination: d.pages,
     identifier: d.doi ? { '@type': 'PropertyValue', propertyID: 'DOI', value: d.doi } : undefined,
     sameAs: d.doi ? `https://doi.org/${d.doi}` : d.url,
     encoding: pdf ? { '@type': 'MediaObject', contentUrl: abs(pdf, site), encodingFormat: 'application/pdf' } : undefined,
-    creativeWorkStatus: d.status === 'in-press' ? 'In press' : undefined,
+    creativeWorkStatus: d.status === 'ahead-of-print' ? 'Online ahead of print' : d.status === 'in-press' ? 'In press' : undefined,
   });
 }
 
-export function projectLd(project: Project, related: Publication[], site: URL, ownerName: string): Node {
+/** `canonical` is the paper the project page asks people to cite; its authors are the project's authors. */
+export function projectLd(project: Project, related: Publication[], site: URL, ownerName: string, canonical?: Publication): Node {
   const d = project.data;
   const url = abs(`/projects/${project.id}/`, site);
   const isCode = Boolean(d.links.code);
@@ -139,12 +143,14 @@ export function projectLd(project: Project, related: Publication[], site: URL, o
     name: d.full_name ? `${d.title}: ${d.full_name}` : d.title,
     alternateName: d.full_name ? d.title : undefined,
     description: d.summary,
-    author: personRef(site, ownerName),
+    author: canonical
+      ? canonical.authors.map((a) => (a.isOwner ? personRef(site, ownerName) : { '@type': 'Person', name: a.full }))
+      : personRef(site, ownerName),
     codeRepository: d.links.code,
     license: licenceUrl(d.licence),
     identifier: d.links.doi ? { '@type': 'PropertyValue', propertyID: 'DOI', value: d.links.doi } : undefined,
     sameAs: [d.links.model, d.links.app, d.links.doi ? `https://doi.org/${d.links.doi}` : undefined].filter(Boolean),
-    dateCreated: String(d.years.start),
+    dateCreated: d.years && String(d.years.start),
     citation: related.map((p) => articleId(p, site)).filter(Boolean).map((id) => ({ '@id': id })),
   });
 }

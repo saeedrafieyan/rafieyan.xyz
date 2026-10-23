@@ -1,16 +1,25 @@
 ---
 import { STATUS_LABELS } from '../lib/data';
 interface Props {
-  status: string;
+  /** Publication status (published, ahead-of-print, …), mapped to its label. */
+  status?: string;
+  /** Ready-made text, e.g. a project's status label. "A · B" shows as two badges. */
+  label?: string;
 }
-const label = STATUS_LABELS[Astro.props.status] ?? (Astro.props.status === 'published' ? '' : Astro.props.status);
+const { status, label: given } = Astro.props;
+const label = given ?? (status ? (STATUS_LABELS[status] ?? (status === 'published' ? '' : status)) : '');
+// Separate badges wrap as whole words on narrow screens instead of one long box.
+const parts = label
+  .split(/\s+·\s+/)
+  .map((s) => s.trim())
+  .filter(Boolean);
 ---
 
 {
-  label && (
+  parts.map((part) => (
     <>
       {' '}
-      <span class="status">{label}</span>
+      <span class="status">{part}</span>
     </>
-  )
+  ))
 }

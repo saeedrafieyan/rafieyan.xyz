@@ -80,7 +80,9 @@ const profile = defineCollection({
     city: z.string(),
     institute: z.object({ name: z.string(), short: z.string(), url: optionalUrl, ror: optionalUrl }),
     group: z.object({ name: z.string(), url: optionalUrl }).optional(),
-    standfirst: z.string().max(240, 'keep the standfirst under 240 characters'),
+    // Short research descriptor: the kicker above your name and the home page's browser-tab title.
+    tagline: optionalText,
+    standfirst: z.string().max(280, 'keep the standfirst under 280 characters'),
     description: optionalText,
     now: z
       .object({ text: optionalText, date: optionalPartialDate })
@@ -103,7 +105,19 @@ const profile = defineCollection({
       .default({}),
     portrait: optionalImage,
     cv_pdf: optionalLink,
+    // Research themes on the home page. `projects` are project file names to link to.
     focus: z
+      .array(
+        z.object({
+          term: z.string(),
+          description: z.string(),
+          topic: optionalText,
+          projects: z.array(z.string()).default([]),
+        }),
+      )
+      .default([]),
+    // Secondary research shown in a smaller list under the themes.
+    other_research: z
       .array(z.object({ term: z.string(), description: z.string(), topic: optionalText }))
       .default([]),
     also_exploring: z.array(z.string()).default([]),
@@ -121,7 +135,8 @@ const publications = defineCollection({
       year: z.coerce.number().int().min(1990).max(2100),
       date: optionalPartialDate,
       type: z.enum(['article', 'review', 'conference', 'preprint', 'thesis', 'chapter']).default('article'),
-      status: z.enum(['published', 'in-press', 'under-review', 'preprint']).default('published'),
+      // ahead-of-print: online with a DOI but not yet in an issue (no volume or article number).
+      status: z.enum(['published', 'ahead-of-print', 'in-press', 'under-review', 'preprint']).default('published'),
       venue: optionalText,
       volume: z.preprocess((v) => (v == null ? v : String(v)), optionalText),
       issue: z.preprocess((v) => (v == null ? v : String(v)), optionalText),
@@ -152,9 +167,18 @@ const projects = defineCollection({
     // Expansion of an acronym title, e.g. "Machine Learning Applications in Tissue Engineering".
     full_name: optionalText,
     status: z.enum(['active', 'maintained', 'archived']).default('active'),
+    // Badge text, e.g. "Ongoing research". Empty: Active / Maintained / Archived from the status.
+    status_label: optionalText,
+    // research: current research (Projects page, first section); resource: released tools and resources.
+    category: z.enum(['research', 'resource']).default('research'),
     tier: z.enum(['featured', 'standard', 'minor']).default('standard'),
     order: z.number().default(50),
-    years: z.object({ start: z.coerce.number().int(), end: z.preprocess(blankToUndefined, z.coerce.number().int().optional()) }),
+    years: z.preprocess(
+      (v) => (v && typeof v === 'object' && blankToUndefined((v as { start?: unknown }).start) === undefined ? undefined : v),
+      z
+        .object({ start: z.coerce.number().int(), end: z.preprocess(blankToUndefined, z.coerce.number().int().optional()) })
+        .optional(),
+    ),
     summary: z.string().max(480, 'keep the summary under ~60 words'),
     facts: optionalText,
     role: optionalText,

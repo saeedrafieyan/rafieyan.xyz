@@ -5,7 +5,15 @@ import Base from '../../layouts/Base.astro';
 import CvEntry from '../../components/CvEntry.astro';
 import PubItem from '../../components/PubItem.astro';
 import InlineList from '../../components/InlineList.astro';
-import { displayNameVariants, displayUrl, getCv, getProfile, getProjects, getPublications } from '../../lib/data';
+import {
+  displayNameVariants,
+  displayUrl,
+  getCv,
+  getProfile,
+  getProjects,
+  getPublications,
+  projectHasPublicLink,
+} from '../../lib/data';
 import { dayMonthYear, isoDay } from '../../lib/dates';
 
 const profile = await getProfile();
@@ -15,7 +23,8 @@ const { data: cv } = await getCv();
 const pubs = await getPublications();
 const published = pubs.filter((x) => x.data.status !== 'under-review');
 const underReview = pubs.filter((x) => x.data.status === 'under-review');
-const software = (await getProjects()).filter((x) => x.data.tier !== 'minor');
+// Released work only: projects with a public code, app, model, dataset or DOI link.
+const software = (await getProjects()).filter((x) => x.data.tier !== 'minor' && projectHasPublicLink(x));
 
 // Fall back to the PDF rebuilt automatically from this page (scripts/cv-pdf.mjs).
 const AUTO_PDF = '/files/saeed-rafieyan-cv.pdf';
@@ -32,7 +41,7 @@ const sections = [
   { id: 'research', label: 'Research experience', show: cv.research.length > 0 },
   { id: 'industry', label: 'Industry', show: cv.industry.length > 0 },
   { id: 'publications', label: 'Publications', show: pubs.length > 0 },
-  { id: 'software', label: 'Software', show: software.length > 0 },
+  { id: 'software', label: 'Software and data', show: software.length > 0 },
   { id: 'talks', label: 'Talks', show: cv.talks.length > 0 },
   { id: 'awards', label: 'Awards', show: cv.awards.length > 0 },
   { id: 'service', label: 'Service', show: cv.service.length > 0 },
@@ -42,7 +51,7 @@ const sections = [
 ].filter((s) => s.show);
 ---
 
-<Base title={`CV: ${p.role}, ${p.institute.short}`} description={`Curriculum vitae of ${p.name}, ${p.role} at ${p.institute.name}.`}>
+<Base title={`CV: ${p.role}, ${p.institute.short}`} description={`Curriculum vitae of ${p.name}, ${p.role} at the ${p.institute.name}.`}>
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">
@@ -183,8 +192,9 @@ const sections = [
               return (
                 <li>
                   <b>{link ? <a href={link}>{s.data.title}</a> : s.data.title}</b>
+                  {s.data.full_name && ` (${s.data.full_name})`}
                   {s.data.links.doi && <span class="muted"> (doi:{s.data.links.doi})</span>}
-                  {' — '}
+                  {'. '}
                   {s.data.summary}
                 </li>
               );

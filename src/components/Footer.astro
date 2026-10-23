@@ -3,6 +3,11 @@ import { getProfile, siteUpdated } from '../lib/data';
 import { dayMonthYear, isoDay } from '../lib/dates';
 import Woodpile from './Woodpile.astro';
 
+interface Props {
+  /** Off on pages that already end with a contact section (the home page). */
+  showContact?: boolean;
+}
+const { showContact = true } = Astro.props;
 const { data: p } = await getProfile();
 const updated = siteUpdated();
 const elsewhere = [
@@ -20,12 +25,20 @@ const elsewhere = [
 ---
 
 <footer class="site-footer">
-  <div class="container footer-grid">
-    <section>
-      <h2 id="footer-contact">Contact</h2>
-      <p><a href={`mailto:${p.email}`}>{p.email}</a></p>
-      <p>{p.institute.name}, {p.city}</p>
-    </section>
+  <div class:list={['container', 'footer-grid', { 'no-contact': !showContact }]}>
+    {
+      showContact && (
+        <section>
+          <h2 id="footer-contact">Contact</h2>
+          <p>
+            <a href={`mailto:${p.email}`}>{p.email}</a>
+          </p>
+          <p>
+            {p.institute.name}, {p.city}
+          </p>
+        </section>
+      )
+    }
     <section>
       <h2 id="footer-elsewhere">Elsewhere</h2>
       <ul>

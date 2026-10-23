@@ -6,7 +6,7 @@ export const GET: APIRoute = async ({ site }) => {
   const { data: profile } = await getProfile();
   const news = await getNews();
   return rss({
-    title: `${profile.name} — news`,
+    title: `${profile.name}: news`,
     description: profile.standfirst,
     site: site!,
     customData: '<language>en</language>',

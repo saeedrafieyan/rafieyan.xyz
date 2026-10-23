@@ -1,34 +1,55 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectEntry from '../../components/ProjectEntry.astro';
-import { getProfile, getProjects, projectHasPage } from '../../lib/data';
+import { getProfile, getProjects, projectHasPage, projectYears } from '../../lib/data';
 
 const { data: profile } = await getProfile();
 const projects = await getProjects();
-const main = projects.filter((p) => p.data.tier !== 'minor');
+const research = projects.filter((p) => p.data.tier !== 'minor' && p.data.category === 'research');
+const resources = projects.filter((p) => p.data.tier !== 'minor' && p.data.category === 'resource');
 const minor = projects.filter((p) => p.data.tier === 'minor');
+
+const titles = (list: typeof projects) => list.map((p) => p.data.title).join(', ');
+const description = [
+  research.length && `Research projects by ${profile.name}: ${titles(research)}.`,
+  resources.length && `Tools and resources: ${titles(resources)}.`,
+]
+  .filter(Boolean)
+  .join(' ');
 ---
 
-<Base
-  title="Projects"
-  description={`Models, datasets and tools by ${profile.name} for tissue engineering and biofabrication: ${main.map((p) => p.data.title).join(', ')}.`}
->
+<Base title="Projects" description={description}>
   <div class="page-grid">
     <header class="with-margin">
       <div class="main">
         <h1 class="page-title">Projects</h1>
-        <p class="standfirst">Models, datasets and tools, mostly for tissue engineering and biofabrication.</p>
+        <p class="standfirst">Current research, followed by tools and resources.</p>
       </div>
     </header>
 
     {
-      main.length > 0 && (
-        <section class="with-margin" aria-labelledby="main-projects">
-          <h2 class="section-head margin visually-hidden" id="main-projects">
-            Main projects
+      research.length > 0 && (
+        <section class="with-margin" aria-labelledby="current-research">
+          <h2 class="section-head margin" id="current-research">
+            Current research
           </h2>
           <div class="main">
-            {main.map((p) => (
+            {research.map((p) => (
+              <ProjectEntry project={p} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      resources.length > 0 && (
+        <section class="with-margin" aria-labelledby="tools-resources">
+          <h2 class="section-head margin" id="tools-resources">
+            Tools and resources
+          </h2>
+          <div class="main">
+            {resources.map((p) => (
               <ProjectEntry project={p} />
             ))}
           </div>
@@ -38,17 +59,17 @@ const minor = projects.filter((p) => p.data.tier === 'minor');
 
     {
       minor.length > 0 && (
-        <section class="with-margin" aria-labelledby="other-work">
-          <h2 class="section-head margin" id="other-work">
-            Other and earlier work
+        <section class="with-margin" aria-labelledby="other-utilities">
+          <h2 class="section-head margin" id="other-utilities">
+            Other utilities
           </h2>
           <ul class="minor-list main">
             {minor.map((p) => {
               const link = p.data.links.code ?? p.data.links.app;
               const linkLabel = p.data.links.code ? 'Code' : 'Web app';
-              const years = p.data.years.end ? `${p.data.years.start}–${p.data.years.end}` : String(p.data.years.start);
+              const years = projectYears(p)?.replace(/–present$/, '');
               return (
-                <li>
+                <li id={p.id}>
                   {projectHasPage(p) ? (
                     <a href={`/projects/${p.id}/`}>
                       <b>{p.data.title}</b>
@@ -56,7 +77,7 @@ const minor = projects.filter((p) => p.data.tier === 'minor');
                   ) : (
                     <b>{p.data.title}</b>
                   )}{' '}
-                  · {years} · {p.data.summary}
+                  {years && `· ${years} `}· {p.data.summary}
                   {link && (
                     <>
                       {' · '}

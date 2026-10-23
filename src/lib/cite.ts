@@ -12,6 +12,6 @@ export function vancouver(pub: Publication): string {
     d.type === 'thesis'
       ? `${d.venue ?? 'Thesis'}; ${d.year}`
       : `${d.venue ?? ''}. ${d.year}${issue ? `;${issue}` : ''}${d.pages ? `:${d.pages}` : ''}`;
-  const status = d.status === 'in-press' ? ' In press.' : '';
+  const status = d.status === 'ahead-of-print' ? ' Online ahead of print.' : d.status === 'in-press' ? ' In press.' : '';
   return `${authors}. ${title}. ${where}.${status}${d.doi ? ` doi:${d.doi}` : ''}`;
 }

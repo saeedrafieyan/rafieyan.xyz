@@ -12,16 +12,14 @@ institute:
 group:
   name: Digital Manufacturing of Biomimetic Systems group
   url: https://www.dmbslab.com/
-standfirst: I build machine-learning models and datasets that predict how
-  tissue-engineering scaffolds will print and how cells will respond to them,
-  before anything is fabricated.
-description: Saeed Rafieyan is a biomedical engineer and machine-learning
-  researcher at the Institute of Physical Chemistry, Polish Academy of Sciences,
-  building AI tools such as MLATE for tissue engineering and biofabrication.
-now:
-  text: MLATE V3 is out in Biofabrication. Open to collaborations on machine
-    learning for biofabrication.
-  date: 2026-10
+tagline: AI for biomaterials and tissue engineering
+standfirst: I develop machine learning models, datasets, and computational tools
+  to guide biomaterial and scaffold design. My research combines biological
+  data, predictive modelling, and inverse design to help researchers decide what
+  to fabricate and test.
+description: Saeed Rafieyan develops machine learning models, datasets, and
+  computational tools for biomaterial design, biofabrication, and tissue
+  engineering.
 email: Raf.Biomed@gmail.com
 profiles:
   scholar: https://scholar.google.com/citations?user=qMZ4LyoAAAAJ
@@ -37,33 +35,39 @@ portrait:
   image: /uploads/portrait.jpg
   alt: Portrait of Saeed Rafieyan
 focus:
-  - term: Machine learning for scaffold design
-    description: Predicting printability, cell response and overall scaffold quality
-      from biomaterials, cell lines and printing parameters, and optimising
-      formulations before fabrication.
+  - term: Predictive modelling for biofabrication
+    description: Using machine learning to predict scaffold printability and cell
+      response and support experimental prioritisation.
     topic: scaffold-ml
-  - term: Biofabrication and biomimetic systems
-    description: Bioprinted tissues, natural-polymer scaffolds and biohybrid
-      actuators, with computational design in the loop.
-    topic: biofabrication
-  - term: Language models for biomedical literature
-    description: Domain-specific models such as TissueGPT, trained on
-      tissue-engineering papers to support literature mining and scientific
-      writing.
-    topic: nlp
+    projects:
+      - mlate
+  - term: Computational and inverse scaffold design
+    description: Connecting design requirements with candidate scaffold structures
+      for tissue engineering and regenerative applications.
+    projects:
+      - computational-inverse-scaffold-design
+      - ai-assisted-geometry-design
+  - term: Biological data for biomaterial design
+    description: Exploring how tissue biology, extracellular-matrix information, and
+      structured research knowledge can inform biomaterial development.
+    projects:
+      - ecm-informed-biomaterial-design
+      - tissuehub
+other_research:
   - term: Chemical and bioprocess engineering
     description: Machine learning and Bayesian optimisation for biorefinery
       processes, with collaborators at Jiangnan University, building on earlier
       work in process simulation and biofuel separation.
     topic: process-ml
-also_exploring:
-  - protein design with AI
-  - AI-driven drug discovery
-  - medical image analysis
-  - extracellular-matrix omics
-contact_note: Open to collaborations on machine learning for biomaterials and
-  tissue engineering.
+  - term: Reviews in biomaterials and biofabrication
+    description: Co-authored reviews on natural-polymer scaffolds for
+      musculoskeletal tissue engineering and on bioprinted biohybrid actuators.
+    topic: biofabrication
+also_exploring: []
+contact_note: I welcome research collaborations in machine learning for
+  biofabrication, computational scaffold design, and biologically informed
+  biomaterial development.
 ---
-I am a biomedical engineer and machine-learning researcher, doing my PhD in the [Digital Manufacturing of Biomimetic Systems group](https://ichf.edu.pl/en/groups/digital-manufacturing-of-biomimetic-systems) at the Institute of Physical Chemistry, Polish Academy of Sciences, in Warsaw. My MSc in Chemical Engineering – Biomedical Engineering at Tarbiat Modares University (2022) used machine learning to predict how cells behave on cardiac tissue-engineering scaffolds, and that question has shaped my research since.
+I am a biomedical engineer and machine learning researcher at the Institute of Physical Chemistry, Polish Academy of Sciences, in Warsaw. My research connects biological data, predictive modelling, and computational design to support biomaterial development and tissue engineering.
 
-My main focus is open-source AI for tissue engineering. I develop [MLATE](/projects/mlate/), a framework of predictive models that helps researchers judge scaffold quality, cell response and printability before they fabricate anything; its third version is built on 2,646 literature-derived scaffold samples across 18 tissue-engineering contexts. The long-term aim is an AI-assisted virtual laboratory that cuts experimental cost and speeds up biomaterial design.
+I develop [MLATE](/projects/mlate/), an open-source framework for predicting scaffold printability and cell response and prioritising formulations for experimental testing. My PhD focuses on computational inverse design for biodegradable wound dressings. Alongside this, I investigate how extracellular-matrix information and structured biological knowledge can inform biomaterial and scaffold design.

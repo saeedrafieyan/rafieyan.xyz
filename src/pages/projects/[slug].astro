@@ -5,7 +5,17 @@ import Base from '../../layouts/Base.astro';
 import Plate from '../../components/Plate.astro';
 import PubItem from '../../components/PubItem.astro';
 import InlineList from '../../components/InlineList.astro';
-import { getProfile, getProjects, getPublications, projectHasPage, pubHref, type Project } from '../../lib/data';
+import Status from '../../components/Status.astro';
+import {
+  getProfile,
+  getProjects,
+  getPublications,
+  projectHasPage,
+  projectStatusLabel,
+  projectYears,
+  pubHref,
+  type Project,
+} from '../../lib/data';
 import { breadcrumbs, projectLd } from '../../lib/jsonld';
 
 export const getStaticPaths = (async () => {
@@ -24,7 +34,7 @@ const versions = d.versions.map((v) => ({ ...v, pub: pubs.find((p) => p.id === v
 const versionIds = new Set(d.versions.map((v) => v.publication));
 const related = pubs.filter((p) => p.data.projects.includes(project.id) || versionIds.has(p.id));
 const canonical = versions.at(-1)?.pub ?? related[0];
-const years = d.years.end ? `${d.years.start}–${d.years.end}` : `${d.years.start}–present`;
+const years = projectYears(project);
 const facts = [
   ['Role', d.role],
   ['Methods', d.methods],
@@ -33,7 +43,7 @@ const facts = [
 ].filter(([, v]) => v);
 const site = Astro.site!;
 const jsonLd = [
-  projectLd(project, related, site, profile.name),
+  projectLd(project, related, site, profile.name, canonical),
   breadcrumbs(site, [
     { name: profile.name, path: '/' },
     { name: 'Projects', path: '/projects/' },
@@ -46,8 +56,16 @@ const jsonLd = [
   <article class="page-grid">
     <header class="with-margin">
       <div class="main">
-        <p class="kicker">Project · {years} · {profile.name}{d.role && `, ${d.role.toLowerCase()}`}</p>
+        <p class="kicker">
+          {['Project', years, `${profile.name}${d.role ? `, ${d.role.toLowerCase()}` : ''}`].filter(Boolean).join(' · ')}
+        </p>
         <h1 class="page-title">{d.title}</h1>
+        {d.full_name && <p class="project-fullname">{d.full_name}</p>}
+        {projectStatusLabel(project) && (
+          <p class="project-status">
+            <Status label={projectStatusLabel(project)} />
+          </p>
+        )}
         <p class="standfirst">{d.summary}</p>
         {
           facts.length > 0 && (
@@ -78,14 +96,16 @@ const jsonLd = [
     {
       d.figure && (
         <div class="with-margin">
-          <div class="main">
+          <div class="full">
             <Plate
               image={d.figure.image}
               alt={d.figure.alt}
               caption={d.figure.caption}
               figure={1}
               eager
-              sizes="(min-width: 60rem) 44rem, calc(100vw - 2rem)"
+              wide
+              zoom
+              sizes="(min-width: 64rem) 58rem, calc(100vw - 2rem)"
             />
           </div>
         </div>
@@ -114,7 +134,7 @@ const jsonLd = [
                     <td>{v.version}</td>
                     <td class="tabular">{v.year}</td>
                     <td>{v.scope}</td>
-                    <td>{v.pub ? <a href={pubHref(v.pub)}>{v.pub.data.venue}</a> : '—'}</td>
+                    <td>{v.pub ? <a href={pubHref(v.pub)}>{v.pub.data.venue}</a> : 'Not published'}</td>
                   </tr>
                 ))}
               </tbody>

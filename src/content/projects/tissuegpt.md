@@ -1,13 +1,13 @@
 ---
 title: TissueGPT
 status: maintained
-tier: featured
-order: 2
+category: resource
+tier: standard
+order: 10
 years:
   start: 2024
-summary: >-
-  A BioGPT language model fine-tuned on tissue-engineering literature, for
-  summarising papers, generating domain text and supporting scientific writing.
+summary: A language model adapted to tissue-engineering literature for exploring
+  domain-specific text generation and research assistance.
 facts: BioGPT fine-tune · Hugging Face · CC BY 4.0
 role: Developer
 methods: Causal language-model fine-tuning (Hugging Face Transformers)
@@ -29,19 +29,19 @@ links:
 
 TissueGPT is a language model for tissue-engineering text. It is a fine-tuned version of Microsoft's [BioGPT](https://huggingface.co/microsoft/BioGPT), trained further on research articles (titles, abstracts and full texts) from the tissue-engineering literature.
 
-## What it is for
+### Intended uses
 
-- Summarising biomedical and tissue-engineering papers
-- Generating domain text, for example when drafting a background section
-- Supporting research on scaffolds, the extracellular matrix (ECM) and related topics
+- Exploring summaries of biomedical and tissue-engineering papers
+- Generating domain text, for example as a starting point for a background section
+- Assisting research on scaffolds, the extracellular matrix (ECM) and related topics
 
-It is a research tool, not for clinical use. Like any language model it can produce fluent but wrong statements, so its output should always be checked by an expert.
+It is a research tool, not for clinical use. Its generated text has not been independently evaluated for scientific accuracy, and like any language model it can produce fluent but wrong statements, so its output should always be checked by an expert.
 
-## Training
+### Training
 
 Two rounds of fine-tuning with Hugging Face Transformers on an NVIDIA A100 80GB GPU: 3 epochs at a learning rate of 5e-5 (fp16), then 2 more at 3e-5 (bf16). Validation perplexity fell from 10.39 after the first round to 9.32 after the second.
 
-## Try it
+### Try it
 
 ```python
 from transformers import AutoTokenizer, AutoModelForCausalLM

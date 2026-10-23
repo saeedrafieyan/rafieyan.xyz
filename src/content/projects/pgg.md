@@ -1,11 +1,14 @@
 ---
-title: PGG – Porous Geometry Generation
+title: PGG
+full_name: Porous Geometry Generation
 status: active
-tier: minor
-order: 10
+category: resource
+tier: standard
+order: 12
 years:
   start: 2026
-summary: Generates printable porous sphere lattices (STL and STEP) and gyroids (STL) from a plain-text spec, tuned to a target porosity.
+summary: A public tool for generating porous geometries for research and
+  fabrication.
 links:
   code: https://github.com/saeedrafieyan/PGG
 ---

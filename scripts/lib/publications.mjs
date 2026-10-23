@@ -92,7 +92,7 @@ export async function lookupDoi(rawDoi) {
       year: Number((date ?? '').slice(0, 4)),
       date,
       type: type === 'article' && (/\breview\b/i.test(title) || /\bthis review\b/i.test(abstract ?? '')) ? 'review' : type,
-      status: type === 'preprint' ? 'preprint' : m.type === 'journal-article' && !m.volume ? 'in-press' : 'published',
+      status: type === 'preprint' ? 'preprint' : m.type === 'journal-article' && !m.volume ? 'ahead-of-print' : 'published',
       venue,
       volume: m.volume,
       issue: m.issue,

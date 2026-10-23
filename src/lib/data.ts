@@ -31,6 +31,7 @@ export const TYPE_LABELS: Record<string, string> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
+  'ahead-of-print': 'Online ahead of print',
   'in-press': 'In press',
   'under-review': 'Under review',
   preprint: 'Preprint',
@@ -135,12 +136,63 @@ export async function getProjects(): Promise<Project[]> {
     (a, b) =>
       tierRank[a.data.tier] - tierRank[b.data.tier] ||
       a.data.order - b.data.order ||
-      b.data.years.start - a.data.years.start,
+      (b.data.years?.start ?? 0) - (a.data.years?.start ?? 0),
   );
 }
 
-/** Featured projects always get a page; others only when they have page text. */
-export const projectHasPage = (p: Project) => Boolean(p.body?.trim()) || p.data.tier === 'featured';
+/** A project gets its own page only when it has page text; the rest are entries on /projects/. */
+export const projectHasPage = (p: Project) => Boolean(p.body?.trim());
+
+/** The project's page, or its entry on the Projects page. */
+export const projectHref = (p: Project) => (projectHasPage(p) ? `/projects/${p.id}/` : `/projects/#${p.id}`);
+
+/** Code, app, model, dataset or DOI: something public a visitor can open. */
+export const projectHasPublicLink = (p: Project) => Object.values(p.data.links).some(Boolean);
+
+const PROJECT_STATUS_LABELS: Record<string, string> = { active: 'Active', maintained: 'Maintained', archived: 'Archived' };
+export const projectStatusLabel = (p: Project) => p.data.status_label ?? PROJECT_STATUS_LABELS[p.data.status];
+
+/** "2022–present", "2019–2021", or undefined when no years are given. */
+export const projectYears = (p: Project) =>
+  p.data.years ? `${p.data.years.start}–${p.data.years.end ?? 'present'}` : undefined;
+
+/**
+ * Counts by type for a set of papers, from the data: "3 articles + MSc thesis", "2 reviews".
+ * Papers under review are left out.
+ */
+export function pubCountLabel(pubs: Publication[]): string {
+  const order = ['article', 'review', 'conference', 'chapter', 'preprint', 'thesis'];
+  const words: Record<string, [string, string]> = {
+    article: ['article', 'articles'],
+    review: ['review', 'reviews'],
+    conference: ['conference paper', 'conference papers'],
+    chapter: ['book chapter', 'book chapters'],
+    preprint: ['preprint', 'preprints'],
+    thesis: ['thesis', 'theses'],
+  };
+  const counted = pubs.filter((p) => p.data.status !== 'under-review');
+  return order
+    .map((type) => {
+      const items = counted.filter((p) => p.data.type === type);
+      if (!items.length) return '';
+      if (type === 'thesis' && items.length === 1) {
+        const degree = items[0].data.venue?.match(/^(msc|phd)\b/i)?.[1].toLowerCase();
+        return degree === 'msc' ? 'MSc thesis' : degree === 'phd' ? 'PhD thesis' : '1 thesis';
+      }
+      const [one, many] = words[type];
+      return `${items.length} ${items.length === 1 ? one : many}`;
+    })
+    .filter(Boolean)
+    .join(' + ');
+}
+
+const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with']);
+const titleCase = (s: string) =>
+  s.replace(/\S+/g, (w, i: number) => (i > 0 && SMALL_WORDS.has(w) ? w : w[0].toUpperCase() + w.slice(1)));
+
+/** Browser-tab title of the home page: "Saeed Rafieyan | AI for Biomaterials and Tissue Engineering". */
+export const homeTitle = (p: Profile) =>
+  p.data.tagline ? `${p.data.name} | ${titleCase(p.data.tagline.replace(/\.$/, ''))}` : p.data.name;
 
 /**
  * Each paper with an abstract or a PDF gets its own page (/publications/<id>/): one URL per

@@ -9,12 +9,25 @@ interface Props {
   eager?: boolean;
   /** Rendered width hint for srcset. */
   sizes?: string;
+  /** Adds an "Enlarge figure" control that opens the full-size image (a dialog with JS, the file without). */
+  zoom?: boolean;
+  /** Natural aspect ratio instead of the 3:2 plate, for large placements. */
+  wide?: boolean;
 }
-const { image, alt, caption, figure, eager = false, sizes = '(min-width: 40rem) 14rem, calc(100vw - 2rem)' } = Astro.props;
+const {
+  image,
+  alt,
+  caption,
+  figure,
+  eager = false,
+  sizes = '(min-width: 40rem) 14rem, calc(100vw - 2rem)',
+  zoom = false,
+  wide = false,
+} = Astro.props;
 const r = responsive(image);
 ---
 
-<figure class="plate">
+<figure class:list={['plate', { 'plate-wide': wide }]}>
   <div class="plate-box">
     <img
       src={r?.src ?? image}
@@ -28,12 +41,82 @@ const r = responsive(image);
       decoding="async"
     />
   </div>
+  {/* figcaption must be the figure's last child, so the Enlarge control goes inside it when there is one. */}
   {
-    caption && (
+    caption ? (
       <figcaption>
         {figure && <b>Fig. {figure}. </b>}
         {caption}
+        {zoom && (
+          <span class="plate-actions">
+            <a href={image} data-zoom={r?.src ?? image} data-alt={alt} data-caption={caption}>
+              Enlarge figure
+            </a>
+          </span>
+        )}
       </figcaption>
+    ) : (
+      zoom && (
+        <p class="plate-actions">
+          <a href={image} data-zoom={r?.src ?? image} data-alt={alt}>
+            Enlarge figure
+          </a>
+        </p>
+      )
     )
   }
 </figure>
+
+<script>
+  // "Enlarge figure": a modal <dialog> with the full-size image. Without JS (or <dialog>) the
+  // link simply opens the image file. Clicking the figure itself does the same for mouse users.
+  const links = document.querySelectorAll<HTMLAnchorElement>('a[data-zoom]');
+  if (links.length && typeof HTMLDialogElement === 'function') {
+    let dialog: HTMLDialogElement | undefined;
+    let img: HTMLImageElement;
+    let caption: HTMLParagraphElement;
+
+    const build = () => {
+      dialog = document.createElement('dialog');
+      dialog.className = 'zoom-dialog';
+      dialog.setAttribute('aria-label', 'Enlarged figure');
+      dialog.innerHTML =
+        '<div class="zoom-bar"><button type="button" class="btn btn-small" autofocus>Close</button></div>' +
+        '<div class="zoom-scroll" role="region" tabindex="0" aria-label="Figure (scroll to see all of it)"><img decoding="async"></div>' +
+        '<p class="zoom-caption"></p>';
+      img = dialog.querySelector('img')!;
+      caption = dialog.querySelector('.zoom-caption')!;
+      dialog.querySelector('button')!.addEventListener('click', () => dialog!.close());
+      // A click on the backdrop (outside the dialog box) closes it; clicks on the box's own padding don't.
+      dialog.addEventListener('click', (e) => {
+        if (e.target !== dialog) return;
+        const r = dialog!.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog!.close();
+      });
+      document.body.append(dialog);
+    };
+
+    const open = (link: HTMLAnchorElement) => {
+      if (!dialog) build();
+      // The largest WebP copy when there is one (much lighter than the original upload).
+      img.src = link.dataset.zoom || link.href;
+      img.alt = link.dataset.alt ?? '';
+      caption.textContent = link.dataset.caption ?? '';
+      caption.hidden = !link.dataset.caption;
+      dialog!.showModal();
+    };
+
+    for (const link of links) {
+      link.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new tab or window: let it through
+        e.preventDefault();
+        open(link);
+      });
+      const figureImg = link.closest('figure')?.querySelector<HTMLImageElement>('.plate-box img');
+      if (figureImg) {
+        figureImg.classList.add('zoomable');
+        figureImg.addEventListener('click', () => open(link));
+      }
+    }
+  }
+</script>

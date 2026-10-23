@@ -6,7 +6,7 @@ import InlineList from '../components/InlineList.astro';
 import PubItem from '../components/PubItem.astro';
 import FeaturedRow from '../components/FeaturedRow.astro';
 import NewsItem from '../components/NewsItem.astro';
-import { getCv, getNews, getProfile, getProjects, getPublications, topicCounts } from '../lib/data';
+import { getCv, getNews, getProfile, getProjects, getPublications, projectHref, pubCountLabel } from '../lib/data';
 import { homeGraph } from '../lib/jsonld';
 import { contentLastmod } from '../lib/lastmod.mjs';
 import { formatPartial } from '../lib/dates';
@@ -17,22 +17,45 @@ const p = profile.data;
 const { Content } = await render(profile);
 const pubs = await getPublications();
 const selected = pubs.filter((x) => x.data.selected).slice(0, 5);
-const featured = (await getProjects()).filter((x) => x.data.tier === 'featured').slice(0, 2);
+const projects = await getProjects();
+const featured = projects.filter((x) => x.data.tier === 'featured').slice(0, 3);
 // Number only figures that actually show a "Fig. N" caption, so numbering always starts at 1.
 let fig = 0;
 const figNos = featured.map((x) => (x.data.figure?.caption ? ++fig : undefined));
 const news = await getNews();
-const recent = news.slice(0, 5);
-const counts = await topicCounts();
+const recent = news.slice(0, 3);
 const portrait = p.portrait ? responsive(p.portrait.image) : undefined;
+
+/** "3 articles + MSc thesis", linked to the Publications page filtered by that topic. */
+const topicLink = (topic?: string) => {
+  const items = topic ? pubs.filter((x) => x.data.topics.includes(topic)) : [];
+  const label = pubCountLabel(items);
+  return label ? { label, href: `/publications/?topic=${topic}` } : undefined;
+};
+const themes = p.focus.map((f) => ({
+  ...f,
+  links: [
+    ...f.projects.map((id) => {
+      const project = projects.find((x) => x.id === id);
+      if (!project) {
+        throw new Error(
+          `Profile → Research themes "${f.term}": project "${id}" does not exist. Use the project's file name without .md.`,
+        );
+      }
+      return { label: project.data.title, href: projectHref(project) };
+    }),
+    ...[topicLink(f.topic)].filter((l) => l !== undefined),
+  ],
+}));
+const other = p.other_research.map((o) => ({ ...o, pubs: topicLink(o.topic) }));
 
 const { data: cv } = await getCv();
 const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/']);
 ---
 
-<Base type="profile" jsonLd={jsonLd}>
+<Base type="profile" jsonLd={jsonLd} footerContact={false}>
   <div class="page-grid">
-    <section class="with-margin" aria-labelledby="name">
+    <section class="with-margin hero" aria-labelledby="name">
       {
         p.portrait && (
           <div class="margin">
@@ -53,13 +76,12 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
         )
       }
       <div class="main">
-        <p class="kicker">{p.role} · {p.institute.short} · {p.city}</p>
+        {p.tagline && <p class="kicker">{p.tagline}</p>}
         <h1 class="display-name" id="name">{p.name}</h1>
         <p class="standfirst">{p.standfirst}</p>
         <p class="meta-line">
-          {p.group && (p.group.url ? <a href={p.group.url}>{p.group.name}</a> : p.group.name)}
-          {p.group && ' · '}
-          {p.institute.url ? <a href={p.institute.url}>{p.institute.name}</a> : p.institute.name}
+          {p.role},{' '}
+          {p.institute.url ? <a href={p.institute.url}>{p.institute.name}</a> : p.institute.name}, {p.city}
         </p>
         {
           p.now && (
@@ -69,11 +91,13 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
           )
         }
         <div class="action-row">
-          <a class="btn btn-primary" href="/cv/">Curriculum vitae</a>
-          <a class="btn" href={`mailto:${p.email}`}>Email</a>
+          <a class="btn btn-primary" href="/projects/">Research projects</a>
+          <a class="btn" href="/publications/">Publications</a>
           <InlineList
-            label="Profiles"
+            label={`More about ${p.name}`}
             links={[
+              { label: 'CV', href: '/cv/' },
+              { label: 'Contact', href: '#contact' },
               { label: 'Google Scholar', href: p.profiles.scholar },
               { label: 'ORCID', href: p.profiles.orcid },
               { label: 'GitHub', href: p.profiles.github },
@@ -89,28 +113,59 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
       <div class="main">
         <div class="prose"><Content /></div>
         {
-          p.focus.length > 0 && (
-            <dl class="focus-list" style="margin-top: var(--space-l)">
-              {p.focus.map((f) => {
-                const n = f.topic ? (counts.get(f.topic) ?? 0) : 0;
-                return (
+          themes.length > 0 && (
+            <>
+              <h3 class="subhead" id="themes">
+                Research themes
+              </h3>
+              <dl class="focus-list">
+                {themes.map((t) => (
                   <>
-                    <dt>{f.term}</dt>
+                    <dt>{t.term}</dt>
                     <dd>
-                      {f.description}
-                      {n > 0 && (
-                        <>
-                          {' '}
-                          <a href={`/publications/?topic=${f.topic}`}>
-                            {n} {n === 1 ? 'paper' : 'papers'} →
-                          </a>
-                        </>
+                      <p>{t.description}</p>
+                      {t.links.length > 0 && (
+                        <p class="focus-links">
+                          <span class="muted">Related:</span>{' '}
+                          {t.links.map((l, i) => (
+                            <>
+                              {i > 0 && (
+                                <span class="sep" aria-hidden="true">
+                                  {' · '}
+                                </span>
+                              )}
+                              <a href={l.href}>{l.label}</a>
+                            </>
+                          ))}
+                        </p>
                       )}
                     </dd>
                   </>
-                );
-              })}
-            </dl>
+                ))}
+              </dl>
+            </>
+          )
+        }
+        {
+          other.length > 0 && (
+            <>
+              <h3 class="subhead" id="other-research">
+                Other research collaborations
+              </h3>
+              <ul class="other-research">
+                {other.map((o) => (
+                  <li>
+                    <b>{o.term}.</b> {o.description}
+                    {o.pubs && (
+                      <>
+                        {' '}
+                        <a href={o.pubs.href}>{o.pubs.label}&nbsp;→</a>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
           )
         }
         {p.also_exploring.length > 0 && <p class="also">Also exploring: {p.also_exploring.join(' · ')}.</p>}
@@ -121,12 +176,15 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
       featured.length > 0 && (
         <section class="with-margin" aria-labelledby="work">
           <h2 class="section-head margin" id="work">
-            Featured work
+            Featured projects
           </h2>
           <div class="main">
             {featured.map((proj, i) => (
               <FeaturedRow project={proj} figure={figNos[i]} />
             ))}
+            <p class="section-foot">
+              <a href="/projects/">All projects and tools →</a>
+            </p>
           </div>
         </section>
       )
@@ -177,8 +235,9 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
     <section class="with-margin" aria-labelledby="contact">
       <h2 class="section-head margin" id="contact">Contact</h2>
       <div class="main">
-        {p.contact_note && <p>{p.contact_note}</p>}
-        <p><a href={`mailto:${p.email}`}>{p.email}</a></p>
+        {p.contact_note && <p class="contact-note">{p.contact_note}</p>}
+        <p class="contact-email"><a href={`mailto:${p.email}`}>{p.email}</a></p>
+        <p class="meta-line">{p.institute.name}, {p.city}</p>
       </div>
     </section>
   </div>

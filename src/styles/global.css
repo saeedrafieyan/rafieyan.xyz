@@ -1524,3 +1524,165 @@ main {
     display: none;
   }
 }
+
+/* ---------- Home: hero, research themes, contact ---------- */
+.hero .standfirst {
+  max-width: 36rem;
+}
+
+.subhead {
+  margin: var(--space-xl) 0 var(--space-s);
+  font: 600 var(--text-xs) / 1.4 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.focus-list dd p {
+  margin: 0;
+}
+
+.focus-list .focus-links {
+  margin-top: var(--space-3xs);
+}
+
+.focus-links .sep {
+  color: var(--color-text-subtle);
+}
+
+.other-research {
+  max-width: 36rem;
+  padding: 0;
+  list-style: none;
+  font: 400 var(--text-sm) / 1.5 var(--font-sans);
+  color: var(--color-text-muted);
+}
+
+.other-research li + li {
+  margin-top: var(--space-xs);
+}
+
+.other-research b {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.other-research a {
+  font-weight: 500;
+}
+
+.contact-note {
+  max-width: 36rem;
+  margin: 0;
+}
+
+.contact-email {
+  margin: var(--space-s) 0 0;
+  font-weight: 500;
+}
+
+/* ---------- Projects ---------- */
+.project-fullname {
+  margin: var(--space-3xs) 0 0;
+  font: 400 var(--text-sm) / 1.45 var(--font-sans);
+  color: var(--color-text-muted);
+}
+
+/* Below 40rem the figure sits above the text: keep it clear of the title. */
+@media (max-width: 39.99rem) {
+  .featured.has-figure > .plate,
+  .project-body.has-figure > .plate {
+    margin-bottom: var(--space-xs);
+  }
+}
+
+.project-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: var(--space-xs) 0 0;
+}
+
+.project-status .status {
+  margin-left: 0;
+}
+
+/* A figure spanning both grid columns (project pages). */
+@media (min-width: 60rem) {
+  .with-margin > .full {
+    grid-column: 1 / -1;
+  }
+}
+
+.plate-wide .plate-box {
+  aspect-ratio: auto;
+}
+
+.plate-actions {
+  display: block;
+  margin: var(--space-2xs) 0 0;
+  font: 500 0.875rem / 1.45 var(--font-sans);
+}
+
+.plate-box img.zoomable {
+  cursor: zoom-in;
+}
+
+/* ---------- Enlarged figure (dialog) ---------- */
+.zoom-dialog {
+  width: min(96vw, 112rem);
+  max-width: none;
+  max-height: 94vh;
+  padding: var(--space-s);
+  border: 1px solid var(--color-rule);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.zoom-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.zoom-dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.zoom-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.zoom-scroll {
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-plate);
+}
+
+.zoom-scroll img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: var(--plate-img-filter);
+}
+
+/* On small screens keep the figure legible and let it scroll sideways. */
+@media (max-width: 60rem) {
+  .zoom-scroll img {
+    width: 62rem;
+    max-width: none;
+  }
+}
+
+.zoom-caption {
+  margin: 0;
+  font: 400 0.875rem / 1.45 var(--font-sans);
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 40rem) {
+  .footer-grid.no-contact {
+    grid-template-columns: 1fr 1fr;
+  }
+}

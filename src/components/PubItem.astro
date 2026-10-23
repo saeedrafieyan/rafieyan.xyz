@@ -87,7 +87,7 @@ const shortTitle = d.title.length > 60 ? `${d.title.slice(0, 57)}…` : d.title;
       {mode === 'full' && details && <span>{', '}{details}</span>}
       <span>{' · '}<time datetime={d.date ?? String(d.year)}>{d.year}</time></span>
       {
-        mode === 'full' && d.type !== 'article' && !isThesis && !underReview && (
+        (mode === 'full' || showDoi) && d.type !== 'article' && !isThesis && !underReview && (
           <span>{' · '}{TYPE_LABELS[d.type]}</span>
         )
       }

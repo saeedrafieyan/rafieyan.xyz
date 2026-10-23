@@ -1,6 +1,6 @@
 ---
 import type { Project } from '../lib/data';
-import { getPublications, projectHasPage, pubHref } from '../lib/data';
+import { getPublications, projectHasPage, projectStatusLabel, pubHref } from '../lib/data';
 import Plate from './Plate.astro';
 import Status from './Status.astro';
 import InlineList from './InlineList.astro';
@@ -20,13 +20,14 @@ const versions = d.versions.map((v) => {
 });
 ---
 
-<article class:list={['featured', { 'has-figure': d.figure }]}>
-  {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} caption={d.figure.caption} figure={figure} />}
+<article class:list={['featured', { 'has-figure': d.figure }]} id={`featured-${project.id}`}>
+  {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} caption={d.figure.caption} figure={figure} zoom />}
   <div>
     <h3 class="featured-title">
       {href ? <a href={href}>{d.title}</a> : d.title}
-      {d.status !== 'active' && <Status status={d.status} />}
+      <Status label={projectStatusLabel(project)} />
     </h3>
+    {d.full_name && <p class="project-fullname">{d.full_name}</p>}
     <p class="project-summary">{d.summary}</p>
     {d.facts && <p class="featured-facts">{d.facts}</p>}
     {

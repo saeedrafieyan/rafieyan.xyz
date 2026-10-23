@@ -83,12 +83,16 @@ content:
         fields:
           - { name: name, label: Name, type: string }
           - { name: url, label: Website, type: string, pattern: { regex: '^(https?://.*)?$', message: 'Full URL starting with https://' } }
+      - name: tagline
+        label: Research descriptor (above your name)
+        type: string
+        description: 'A few words, e.g. "AI for biomaterials and tissue engineering". Also the home page title in browser tabs and search results.'
       - name: standfirst
-        label: One-sentence summary (under the name)
+        label: Introduction (under the name)
         type: text
         required: true
-        description: Under 240 characters.
-        options: { maxlength: 240 }
+        description: One or two sentences, under 280 characters.
+        options: { maxlength: 280 }
       - name: description
         label: Search-engine description
         type: text
@@ -126,16 +130,29 @@ content:
         type: file
         options: { media: files }
       - name: focus
-        label: Research focus (home page)
+        label: Research themes (home page)
         type: object
         list: { collapsible: { collapsed: true, summary: '{term}' } }
         fields:
           - { name: term, label: Heading, type: string, required: true }
-          - { name: description, label: Description, type: text, required: true }
+          - { name: description, label: Description (one sentence), type: text, required: true }
           - name: topic
             label: Topic tag
             type: string
-            description: Short tag, e.g. scaffold-ml. Publications with the same tag are counted and linked.
+            description: Short tag, e.g. scaffold-ml. Publications with the same tag are counted ("3 articles + MSc thesis") and linked.
+          - name: projects
+            label: Related projects
+            type: string
+            list: true
+            description: Project file names without .md (e.g. mlate). Each becomes a link under the theme.
+      - name: other_research
+        label: Other research collaborations (home page, smaller)
+        type: object
+        list: { collapsible: { collapsed: true, summary: '{term}' } }
+        fields:
+          - { name: term, label: Heading, type: string, required: true }
+          - { name: description, label: Description (one sentence), type: text, required: true }
+          - { name: topic, label: Topic tag, type: string, description: 'e.g. process-ml. Also names the topic in the Publications filter.' }
       - name: also_exploring
         label: Also exploring
         type: string
@@ -191,7 +208,8 @@ content:
         options:
           values:
             - { name: published, label: Published }
-            - { name: in-press, label: In press }
+            - { name: ahead-of-print, label: 'Online ahead of print (online with a DOI, no volume yet)' }
+            - { name: in-press, label: 'In press (accepted, not yet online)' }
             - { name: under-review, label: Under review }
             - { name: preprint, label: Preprint }
       - { name: venue, label: Journal / conference, type: string, description: 'Needed unless Status is Under review.' }
@@ -216,7 +234,7 @@ content:
       - { name: selected, label: Show on the home page, type: boolean }
       - name: topics
         label: Topic tags
-        description: Same tags as in Profile → Research focus (e.g. scaffold-ml, biofabrication, process-ml).
+        description: Same tags as in Profile → Research themes or Other research collaborations (e.g. scaffold-ml, biofabrication, process-ml).
         type: string
         list: true
       - name: projects
@@ -234,7 +252,7 @@ content:
     format: yaml-frontmatter
     filename: '{primary}.md'
     view:
-      fields: [title, tier, status, order]
+      fields: [title, category, tier, status, order]
       primary: title
       sort: [order, title]
       default: { sort: order, order: asc }
@@ -248,7 +266,14 @@ content:
           values:
             - { name: featured, label: Featured (home page + projects) }
             - { name: standard, label: Standard (projects page) }
-            - { name: minor, label: Minor (one line under “Other and earlier work”) }
+            - { name: minor, label: Minor (one line under “Other utilities”) }
+      - name: category
+        label: Section on the Projects page
+        type: select
+        options:
+          values:
+            - { name: research, label: Current research }
+            - { name: resource, label: Tools and resources }
       - name: status
         label: Status
         type: select
@@ -257,14 +282,18 @@ content:
             - { name: active, label: Active }
             - { name: maintained, label: Maintained }
             - { name: archived, label: Archived }
+      - name: status_label
+        label: Status label (badge)
+        type: string
+        description: 'e.g. "Ongoing research" or "Early-stage initiative". Leave empty to show Active / Maintained / Archived.'
       - { name: order, label: Order (lower comes first), type: number }
       - name: years
         label: Years
         type: object
         fields:
-          - { name: start, label: Start year, type: number, required: true }
+          - { name: start, label: Start year (optional), type: number }
           - { name: end, label: End year (empty = ongoing), type: number }
-      - { name: summary, label: Summary (about 60 words), type: text, required: true, options: { maxlength: 480 } }
+      - { name: summary, label: Summary (one or two short sentences), type: text, required: true, options: { maxlength: 480 } }
       - { name: facts, label: Facts line (home page), type: string, description: 'e.g. Python · 2,646 samples · 130 biomaterials' }
       - { name: role, label: Your role, type: string }
       - { name: methods, label: Methods, type: string }
@@ -296,7 +325,7 @@ content:
           - { name: year, label: Year, type: number, required: true }
           - { name: scope, label: Scope, type: string, required: true }
           - { name: publication, label: Publication file name (without .yaml), type: string }
-      - { name: body, label: 'Project page text (featured projects always get a page; for others, leave empty for no page)', type: rich-text, options: { media: images } }
+      - { name: body, label: 'Project page text (only projects with text get their own page; leave empty for unpublished work)', type: rich-text, options: { media: images } }
 
   # ---------------------------------------------------------------- News
   - name: news

@@ -9,7 +9,7 @@ import sharp from 'sharp';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'public/uploads');
 const OUT = path.join(ROOT, 'public/_img');
-const WIDTHS = [400, 800, 1400];
+const WIDTHS = [400, 800, 1400, 2400];
 
 async function walk(dir) {
   const out = [];
@@ -31,7 +31,8 @@ for (const file of await walk(SRC)) {
   const key = `/uploads/${rel}`;
   const base = rel.replace(/\.[^.]+$/, '');
   const { mtimeMs, size } = await stat(file);
-  if (previous[key]?.mtimeMs === mtimeMs && previous[key].variants.every((v) => v.exists !== false)) {
+  const widths = WIDTHS.join(',');
+  if (previous[key]?.mtimeMs === mtimeMs && previous[key].widths === widths && previous[key].variants.every((v) => v.exists !== false)) {
     manifest[key] = previous[key];
     continue;
   }
@@ -52,7 +53,7 @@ for (const file of await walk(SRC)) {
     await sharp(file).rotate().resize({ width: w, withoutEnlargement: true }).webp({ quality: 80 }).toFile(out);
     variants.push({ w, url });
   }
-  manifest[key] = { mtimeMs, width, height, variants };
+  manifest[key] = { mtimeMs, widths, width, height, variants };
   console.log(`✓ ${key} → ${variants.map((v) => v.w).join(', ')}w WebP`);
 }
 

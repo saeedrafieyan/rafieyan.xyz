@@ -18,9 +18,9 @@ All content is plain Markdown and YAML in [`src/content/`](src/content). Every c
 | Feature a paper on the home page     | Publications → open it → tick **Show on the home page**                      |
 | Post a news item                     | **News & posts → Add**: date, one or two sentences, optional link            |
 | Write a longer post                  | News & posts → Add, fill in **Post title** and **Post text**                 |
-| Change bio, photo, links, "Now" line | **Profile & home page**                                                      |
+| Change bio, themes, photo, links     | **Profile & home page**                                                      |
 | Update the CV                        | **CV**. The PDF at `/files/saeed-rafieyan-cv.pdf` is rebuilt automatically.  |
-| Add a project                        | **Projects → Add**. Featured projects always get a page; for others, leave *Project page text* empty for no separate page. |
+| Add a project                        | **Projects → Add**: pick the section (current research, or tools and resources) and a status label. Only projects with *Project page text* get their own page; leave it empty for work that is not yet published. |
 | Help Google Scholar list a paper     | Give it an **Abstract** (and, if the publisher allows, a **PDF**): every such paper gets its own page at `/publications/<file-name>/`. |
 | Upload an image or PDF               | Use the image/file fields; uploads go to `public/uploads` and `public/files`. Resized WebP copies are made at build time. |
 
@@ -80,8 +80,8 @@ src/styles/global.css              all design tokens and styles
 - **Authors**: one per line, `Given Family`. For two-word family names write `Family, Given`
   (e.g. `Partovi Nasr, Minoo`) so initials and BibTeX come out right. Your own name is found and
   bolded automatically (add spelling variants under *Profile → Other spellings of your name*).
-- **Topics**: tags such as `scaffold-ml` link papers to the *Research focus* items on the home page
-  and to the topic filter on the Publications page.
+- **Topics**: tags such as `scaffold-ml` link papers to the *Research themes* (and *Other research
+  collaborations*) on the home page and to the topic filter on the Publications page.
 - **Dates**: `YYYY-MM-DD` or `YYYY-MM`.
 - **Photos**: phone photos can carry the GPS location where they were taken. The site only serves
   stripped copies, but the original file stays in the (public) repository, so turn location off
@@ -137,8 +137,8 @@ more than four months old.
      (Cloudflare → rafieyan.xyz → DNS → TXT `@`). Never delete that record.
    - Submit `https://rafieyan.xyz/sitemap-index.xml`.
    - In the **sraf.ir** property: Settings → Change of address → rafieyan.xyz.
-   - At https://www.bing.com/webmasters: Import from Google Search Console, submit the same
-     sitemap, and use Site Move from sraf.ir.
+   - At https://www.bing.com/webmasters: add and verify both domains, and submit the same sitemap.
+     Bing's current console has no Site Move tool; it follows the 301 redirect.
    - Optional: submit the main pages at https://search.brave.com/submit-url (Brave's index is
      reportedly used by Claude's web search).
    Keep sraf.ir registered and its redirect rule in place for at least a year.
