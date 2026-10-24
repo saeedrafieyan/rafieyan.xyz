@@ -2,7 +2,7 @@
    rafieyan.xyz, "Lab Index" design system
    Swiss Modernism 2.0 (ui-ux-pro-max): a 4/8/12-column grid on an 8px unit,
    institutional navy as the single accent, hierarchy from type, space and 1px rules.
-   Crimson Pro for display headings, Inter for text and UI, Atkinson Hyperlegible Mono for DOIs and code.
+   Newsreader for reading text and headings, IBM Plex Sans for interface text, labels and metadata.
    ========================================================================== */
 
 /* ---------- Colour tokens ---------- */
@@ -99,21 +99,21 @@
 
 /* ---------- Type, space and grid tokens ---------- */
 :root {
-  --font-sans: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: var(--font-crimson), Georgia, 'Times New Roman', serif;
-  --font-mono: var(--font-atkmono), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-serif: var(--font-newsreader), 'Iowan Old Style', Charter, Georgia, serif;
+  --font-sans: var(--font-plex), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
   --fs-label: 0.8125rem; /* 13 */
   --fs-sm: 0.9375rem; /* 15: meta, authors, captions */
   --fs-ui: 0.9375rem; /* 15: nav, buttons, lists */
-  --fs-base: 1rem; /* 16, 17 from 40rem */
+  --fs-base: 1.0625rem; /* 17, 18 from 40rem (Newsreader runs small) */
   --fs-md: 1.125rem; /* 18 */
   --fs-lg: 1.25rem; /* 20 */
   --fs-xl: 1.5rem; /* 24 */
   --fs-lead: 1.25rem; /* 20, 22 from 64rem */
   --fs-2xl: 2rem; /* 32 */
   --fs-h1: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem);
-  --fs-display: clamp(2.75rem, 1.5rem + 4.5vw, 4.5rem);
+  --fs-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.25rem);
 
   --space-3xs: 0.25rem;
   --space-2xs: 0.5rem;
@@ -143,7 +143,7 @@
     --sub: 8;
     --gutter: 1.5rem;
     --page-pad: 2rem;
-    --fs-base: 1.0625rem;
+    --fs-base: 1.125rem;
   }
 }
 
@@ -187,7 +187,7 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: var(--fs-base);
   font-weight: var(--body-wght);
   line-height: 1.6;
@@ -388,7 +388,7 @@ main {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font: 600 1.375rem / 1.2 var(--font-serif);
+  font: 600 1.25rem / 1.2 var(--font-serif);
   letter-spacing: -0.005em;
   color: var(--color-text);
   text-decoration: none;
@@ -519,21 +519,20 @@ main {
 }
 
 .display-name {
-  font: 600 var(--fs-display) / 1 var(--font-serif);
-  letter-spacing: -0.01em;
+  font: 500 var(--fs-display) / 1.02 var(--font-serif);
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
 .page-title {
-  font: 600 var(--fs-h1) / 1.05 var(--font-serif);
-  letter-spacing: -0.01em;
+  font: 500 var(--fs-h1) / 1.05 var(--font-serif);
+  letter-spacing: -0.015em;
 }
 
 .standfirst {
   max-width: 42rem;
   margin: var(--space-m) 0 0;
-  font: 400 var(--fs-lead) / 1.45 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 400 var(--fs-lead) / 1.4 var(--font-serif);
   color: var(--color-text-muted);
 }
 
@@ -941,8 +940,7 @@ main {
 
 .prose h3 {
   margin: var(--space-l) 0 var(--space-2xs);
-  font: 600 var(--fs-lg) / 1.35 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 600 var(--fs-lg) / 1.3 var(--font-serif);
 }
 
 .prose > :first-child {
@@ -1049,8 +1047,7 @@ main {
 }
 
 .focus-list dt {
-  font: 600 var(--fs-md) / 1.4 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 1.1875rem / 1.3 var(--font-serif);
 }
 
 .focus-list dd {
@@ -1158,8 +1155,7 @@ main {
 
 .contact-email {
   margin: var(--space-m) 0 0;
-  font: 600 var(--fs-xl) / 1.3 var(--font-sans);
-  letter-spacing: -0.015em;
+  font: 500 var(--fs-xl) / 1.3 var(--font-serif);
   overflow-wrap: anywhere;
 }
 
@@ -1201,8 +1197,7 @@ main {
 
 .project-title,
 .featured-title {
-  font: 600 var(--fs-lg) / 1.35 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 600 var(--fs-lg) / 1.3 var(--font-serif);
 }
 
 .project-title a,
@@ -1374,7 +1369,7 @@ main {
 }
 
 .minor-list b {
-  font: 600 1rem / 1.4 var(--font-sans);
+  font: 600 1.0625rem / 1.3 var(--font-serif);
   color: var(--color-text);
 }
 
@@ -1419,8 +1414,7 @@ main {
 }
 
 .pub-title {
-  font: 600 var(--fs-md) / 1.4 var(--font-sans);
-  letter-spacing: -0.005em;
+  font: 500 1.1875rem / 1.3 var(--font-serif);
   overflow-wrap: anywhere;
   text-wrap: pretty;
 }
@@ -1474,7 +1468,7 @@ main {
 }
 
 .pub-venue .journal {
-  font-style: italic;
+  font: italic 400 1rem / 1.4 var(--font-serif);
   color: var(--color-text);
 }
 
@@ -1552,7 +1546,7 @@ main {
   padding: var(--space-s) var(--space-m);
   border-left: 2px solid var(--color-accent);
   background: var(--color-muted-bg);
-  font: 400 var(--fs-ui) / 1.6 var(--font-sans);
+  font: 400 1rem / 1.55 var(--font-serif);
   color: var(--color-text);
 }
 
@@ -1580,8 +1574,7 @@ main {
 /* Year groups */
 .pub-group-label {
   margin-bottom: var(--space-s);
-  font: 600 var(--fs-xl) / 1.2 var(--font-sans);
-  letter-spacing: -0.015em;
+  font: 500 var(--fs-xl) / 1.2 var(--font-serif);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1781,7 +1774,7 @@ main {
 }
 
 .news-post-title {
-  font: 600 var(--fs-md) / 1.4 var(--font-sans);
+  font: 500 1.1875rem / 1.3 var(--font-serif);
 }
 
 @media (min-width: 40rem) {
@@ -1821,17 +1814,16 @@ main {
 }
 
 .cv-role {
-  font: 600 var(--fs-md) / 1.4 var(--font-sans);
-  letter-spacing: -0.005em;
+  font: 600 var(--fs-md) / 1.3 var(--font-serif);
 }
 
 .cv-org {
   margin: var(--space-3xs) 0 0;
-  font-size: var(--fs-ui);
+  font-size: 1.0625rem;
 }
 
 .cv-org .org {
-  font-weight: 500;
+  font-style: italic;
 }
 
 .cv-org .place {
@@ -1841,14 +1833,14 @@ main {
 
 .cv-thesis {
   margin: var(--space-3xs) 0 0;
-  font-size: var(--fs-ui);
+  font-size: 1rem;
 }
 
 .cv-bullets {
   margin-top: var(--space-2xs);
   padding-left: 1.125rem;
   list-style: square;
-  font: 400 var(--fs-ui) / 1.55 var(--font-sans);
+  font: 400 1rem / 1.5 var(--font-serif);
 }
 
 .cv-bullets li::marker {
@@ -1903,7 +1895,7 @@ main {
 .cv-plain li {
   padding-block: var(--space-2xs);
   border-top: 1px solid var(--color-rule);
-  font: 400 var(--fs-ui) / 1.55 var(--font-sans);
+  font: 400 1rem / 1.55 var(--font-serif);
 }
 
 .cv-plain li:first-child {
@@ -1927,7 +1919,7 @@ main {
 
 .skills-list dd {
   margin: 0;
-  font: 400 var(--fs-ui) / 1.55 var(--font-sans);
+  font: 400 1rem / 1.55 var(--font-serif);
 }
 
 @media (min-width: 40rem) {
@@ -2170,7 +2162,7 @@ main {
     --fs-label: 8pt;
     --fs-sm: 9pt;
     --fs-ui: 9.5pt;
-    --fs-base: 9.5pt;
+    --fs-base: 10pt;
     --fs-md: 10.5pt;
     --fs-lg: 11.5pt;
     --fs-xl: 13pt;
