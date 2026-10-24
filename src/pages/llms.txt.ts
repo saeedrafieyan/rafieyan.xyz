@@ -29,7 +29,8 @@ export const GET: APIRoute = async ({ site }) => {
           ...list.map((x) => {
             const name = x.data.full_name ? `${x.data.title} (${x.data.full_name})` : x.data.title;
             const status = projectStatusLabel(x);
-            return `- [${name}](${abs(projectHref(x))})${status ? ` (${status})` : ''}: ${x.data.summary.replace(/\s+/g, ' ').trim()}`;
+            const summary = x.data.summary ? `: ${x.data.summary.replace(/\s+/g, ' ').trim()}` : '';
+            return `- [${name}](${abs(projectHref(x))})${status ? ` (${status})` : ''}${summary}`;
           }),
           '',
         ]

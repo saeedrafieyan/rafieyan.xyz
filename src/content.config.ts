@@ -179,7 +179,8 @@ const projects = defineCollection({
         .object({ start: z.coerce.number().int(), end: z.preprocess(blankToUndefined, z.coerce.number().int().optional()) })
         .optional(),
     ),
-    summary: z.string().max(480, 'keep the summary under ~60 words'),
+    // Optional: an entry can show just its title and status until there is something public to say.
+    summary: z.preprocess(blankToUndefined, z.string().trim().max(480, 'keep the summary under ~60 words').optional()),
     facts: optionalText,
     role: optionalText,
     methods: optionalText,

@@ -77,7 +77,8 @@ const description = [
                   ) : (
                     <b>{p.data.title}</b>
                   )}{' '}
-                  {years && `· ${years} `}· {p.data.summary}
+                  {years && `· ${years} `}
+                  {p.data.summary && `· ${p.data.summary}`}
                   {link && (
                     <>
                       {' · '}

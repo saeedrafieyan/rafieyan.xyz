@@ -66,7 +66,7 @@ const jsonLd = [
             <Status label={projectStatusLabel(project)} />
           </p>
         )}
-        <p class="standfirst">{d.summary}</p>
+        {d.summary && <p class="standfirst">{d.summary}</p>}
         {
           facts.length > 0 && (
             <dl class="facts">

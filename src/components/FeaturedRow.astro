@@ -54,7 +54,7 @@ const stats = factParts.length > 1 && factParts.every((f) => /^\d[\d,.]*\s+\S/.t
         />
       )
     }
-    <p class="project-summary">{d.summary}</p>
+    {d.summary && <p class="project-summary">{d.summary}</p>}
     {
       stats ? (
         <ul class="stat-strip">

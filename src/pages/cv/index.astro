@@ -194,8 +194,7 @@ const sections = [
                   <b>{link ? <a href={link}>{s.data.title}</a> : s.data.title}</b>
                   {s.data.full_name && ` (${s.data.full_name})`}
                   {s.data.links.doi && <span class="muted"> (doi:{s.data.links.doi})</span>}
-                  {'. '}
-                  {s.data.summary}
+                  {s.data.summary && `. ${s.data.summary}`}
                 </li>
               );
             })}

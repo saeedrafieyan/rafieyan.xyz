@@ -293,7 +293,7 @@ content:
         fields:
           - { name: start, label: Start year (optional), type: number }
           - { name: end, label: End year (empty = ongoing), type: number }
-      - { name: summary, label: Summary (one or two short sentences), type: text, required: true, options: { maxlength: 480 } }
+      - { name: summary, label: Summary (one or two short sentences; optional), type: text, options: { maxlength: 480 } }
       - { name: facts, label: Facts line (home page), type: string, description: 'e.g. Python · 2,646 samples · 130 biomaterials' }
       - { name: role, label: Your role, type: string }
       - { name: methods, label: Methods, type: string }
