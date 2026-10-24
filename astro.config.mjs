@@ -30,6 +30,8 @@ const variants = (pkg, file, weight, styles) =>
 export default defineConfig({
   site: 'https://rafieyan.xyz',
   trailingSlash: 'always',
+  // Code blocks follow the site theme (light by default, dark colours via CSS variables).
+  markdown: { shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' } } },
   integrations: [
     sitemap({
       filter: (page) => !page.endsWith('/404/'),
@@ -43,17 +45,28 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.local(),
-      name: 'Newsreader',
-      cssVariable: '--font-newsreader',
-      options: { variants: /** @type {any} */ (variants('newsreader', 'newsreader', '200 800', ['normal', 'italic'])) },
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      options: { variants: /** @type {any} */ (variants('inter', 'inter', '100 900', ['normal', 'italic'])) },
+      fallbacks: ['Arial', 'sans-serif'],
+    },
+    {
+      // Display serif for the name and page/section headings only.
+      provider: fontProviders.local(),
+      name: 'Crimson Pro',
+      cssVariable: '--font-crimson',
+      options: { variants: /** @type {any} */ (variants('crimson-pro', 'crimson-pro', '200 900', ['normal'])) },
       fallbacks: ['Georgia', 'serif'],
     },
     {
+      // DOIs, BibTeX and code.
       provider: fontProviders.local(),
-      name: 'IBM Plex Sans',
-      cssVariable: '--font-plex',
-      options: { variants: /** @type {any} */ (variants('ibm-plex-sans', 'ibm-plex-sans', '100 700', ['normal'])) },
-      fallbacks: ['Arial', 'sans-serif'],
+      name: 'Atkinson Hyperlegible Mono',
+      cssVariable: '--font-atkmono',
+      options: {
+        variants: /** @type {any} */ (variants('atkinson-hyperlegible-mono', 'atkinson-hyperlegible-mono', '200 800', ['normal'])),
+      },
+      fallbacks: ['Courier New', 'monospace'],
     },
   ],
 });

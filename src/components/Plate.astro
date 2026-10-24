@@ -20,7 +20,7 @@ const {
   caption,
   figure,
   eager = false,
-  sizes = '(min-width: 40rem) 14rem, calc(100vw - 2rem)',
+  sizes = '(min-width: 80rem) 588px, (min-width: 64rem) 46vw, (min-width: 40rem) 56vw, calc(100vw - 2rem)',
   zoom = false,
   wide = false,
 } = Astro.props;
@@ -50,6 +50,7 @@ const r = responsive(image);
         {zoom && (
           <span class="plate-actions">
             <a href={image} data-zoom={r?.src ?? image} data-alt={alt} data-caption={caption}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" /></svg>
               Enlarge figure
             </a>
           </span>
@@ -59,6 +60,7 @@ const r = responsive(image);
       zoom && (
         <p class="plate-actions">
           <a href={image} data-zoom={r?.src ?? image} data-alt={alt}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" /></svg>
             Enlarge figure
           </a>
         </p>

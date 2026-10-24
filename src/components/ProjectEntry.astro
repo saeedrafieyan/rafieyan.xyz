@@ -12,6 +12,7 @@ const { project } = Astro.props;
 const d = project.data;
 const hasPage = projectHasPage(project);
 const href = hasPage ? `/projects/${project.id}/` : (d.links.code ?? d.links.app ?? d.links.model);
+const status = projectStatusLabel(project);
 // Methods and data stay on the project's own page, so every entry here is the same short shape.
 const facts = [
   ['Role', d.role],
@@ -21,39 +22,43 @@ const facts = [
 ---
 
 <article class="project" id={project.id}>
-  <h3 class="project-title">
-    {href ? <a href={href}>{d.title}</a> : d.title}
-    <Status label={projectStatusLabel(project)} />
-  </h3>
-  {d.full_name && <p class="project-fullname">{d.full_name}</p>}
-  <div class:list={['project-body', { 'has-figure': d.figure }]} style="margin-top: var(--space-xs)">
+  <div class="project-head">
+    <h3 class="project-title">{href ? <a href={href}>{d.title}</a> : d.title}</h3>
+    {d.full_name && <p class="project-fullname">{d.full_name}</p>}
+    {
+      status && (
+        <p class="project-status">
+          <Status label={status} />
+        </p>
+      )
+    }
+  </div>
+  <div class="project-body">
     {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} zoom />}
-    <div>
-      <p class="project-summary">{d.summary}</p>
-      {
-        facts.length > 0 && (
-          <dl class="facts">
-            {facts.map(([k, v]) => (
-              <>
-                <dt>{k}</dt>
-                <dd>{v}</dd>
-              </>
-            ))}
-          </dl>
-        )
-      }
-      <InlineList
-        class="project-links"
-        label={`${d.title} links`}
-        links={[
-          { label: 'Code', href: d.links.code },
-          { label: 'Web app', href: d.links.app },
-          { label: 'Model', href: d.links.model },
-          { label: 'Dataset', href: d.links.dataset },
-          { label: 'DOI', href: d.links.doi && `https://doi.org/${d.links.doi}` },
-          { label: 'Project page →', href: hasPage ? `/projects/${project.id}/` : undefined },
-        ]}
-      />
-    </div>
+    <p class="project-summary">{d.summary}</p>
+    {
+      facts.length > 0 && (
+        <dl class="facts">
+          {facts.map(([k, v]) => (
+            <>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </>
+          ))}
+        </dl>
+      )
+    }
+    <InlineList
+      class="project-links"
+      label={`${d.title} links`}
+      links={[
+        { label: 'Code', href: d.links.code },
+        { label: 'Web app', href: d.links.app },
+        { label: 'Model', href: d.links.model },
+        { label: 'Dataset', href: d.links.dataset },
+        { label: 'DOI', href: d.links.doi && `https://doi.org/${d.links.doi}` },
+        { label: 'Project page →', href: hasPage ? `/projects/${project.id}/` : undefined },
+      ]}
+    />
   </div>
 </article>

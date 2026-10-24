@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <style>
-    .bg { fill: #fbfaf6; } .ink { fill: #9c2b23; }
-    @media (prefers-color-scheme: dark) { .bg { fill: #161513; } .ink { fill: #ee8e7a; } }
+    .bg { fill: #f8fafc; } .ink { fill: #1e3a5f; }
+    @media (prefers-color-scheme: dark) { .bg { fill: #0d1424; } .ink { fill: #9dc1f5; } }
   </style>
-  <rect class="bg" width="32" height="32" rx="4"/>
+  <rect class="bg" width="32" height="32"/>
   <g class="ink">
     <circle cx="6" cy="8" r="3.6"/><circle cx="16" cy="8" r="3.6"/><circle cx="26" cy="8" r="3.6"/>
     <rect x="2" y="14.5" width="28" height="3"/>

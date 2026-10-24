@@ -25,8 +25,8 @@ const desc = description ?? profile.description ?? profile.standfirst;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og.png', Astro.site);
 // fontProviders.local() sets no subset metadata, so <Font preload> filters can't pick a face.
-// Preload the first Newsreader face (latin, normal; see the variant order in astro.config.mjs).
-const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === 'normal')?.src[0]?.url;
+// Preload the first Inter face (latin, normal; see the variant order in astro.config.mjs).
+const interLatin = fontData['--font-inter']?.find((f) => f.style === 'normal')?.src[0]?.url;
 ---
 
 <!doctype html>
@@ -39,8 +39,8 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
     <meta name="author" content={profile.name} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1424" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" type="application/rss+xml" title={`${profile.name}: news`} href="/rss.xml" />
@@ -67,9 +67,10 @@ const newsreaderLatin = fontData['--font-newsreader']?.find((f) => f.style === '
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
       } catch {}
     </script>
-    {newsreaderLatin && <link rel="preload" href={newsreaderLatin} as="font" type="font/woff2" crossorigin />}
-    <Font cssVariable="--font-newsreader" />
-    <Font cssVariable="--font-plex" />
+    {interLatin && <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />}
+    <Font cssVariable="--font-inter" />
+    <Font cssVariable="--font-crimson" />
+    <Font cssVariable="--font-atkmono" />
     <slot name="head" />
     {
       (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).map((ld) => (

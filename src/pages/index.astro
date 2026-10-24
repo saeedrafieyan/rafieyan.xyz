@@ -63,7 +63,7 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
               <img
                 src={portrait?.src ?? p.portrait.image}
                 srcset={portrait?.srcset}
-                sizes={portrait ? '(min-width: 60rem) 11rem, 5rem' : undefined}
+                sizes={portrait ? '(min-width: 64rem) 14rem, (min-width: 40rem) 22vw, 6rem' : undefined}
                 width={portrait?.width}
                 height={portrait?.height}
                 alt={p.portrait.alt}
@@ -120,7 +120,7 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
               </h3>
               <dl class="focus-list">
                 {themes.map((t) => (
-                  <>
+                  <div class="focus-item">
                     <dt>{t.term}</dt>
                     <dd>
                       <p>{t.description}</p>
@@ -131,7 +131,7 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
                             <>
                               {i > 0 && (
                                 <span class="sep" aria-hidden="true">
-                                  {' · '}
+                                  {'\u00a0· '}
                                 </span>
                               )}
                               <a href={l.href}>{l.label}</a>
@@ -140,7 +140,7 @@ const jsonLd = homeGraph(profile, Astro.site!, cv.education, contentLastmod()['/
                         </p>
                       )}
                     </dd>
-                  </>
+                  </div>
                 ))}
               </dl>
             </>

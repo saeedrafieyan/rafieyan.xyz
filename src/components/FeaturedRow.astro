@@ -14,32 +14,65 @@ const d = project.data;
 const pubs = await getPublications();
 const hasPage = projectHasPage(project);
 const href = hasPage ? `/projects/${project.id}/` : (d.links.code ?? d.links.app ?? d.links.model);
+const status = projectStatusLabel(project);
 const versions = d.versions.map((v) => {
   const pub = pubs.find((p) => p.id === v.publication);
   return { ...v, pub };
 });
+// "2,646 samples · 130 biomaterials" becomes number + label modules; other facts lines stay a sentence.
+const factParts = d.facts?.split(/\s+·\s+/) ?? [];
+const stats = factParts.length > 1 && factParts.every((f) => /^\d[\d,.]*\s+\S/.test(f))
+  ? factParts.map((f) => {
+      const [, n, label] = f.match(/^(\d[\d,.]*)\s+(.+)$/)!;
+      return { n, label };
+    })
+  : undefined;
 ---
 
 <article class:list={['featured', { 'has-figure': d.figure }]} id={`featured-${project.id}`}>
-  {d.figure && <Plate image={d.figure.image} alt={d.figure.alt} caption={d.figure.caption} figure={figure} zoom />}
-  <div>
-    <h3 class="featured-title">
-      {href ? <a href={href}>{d.title}</a> : d.title}
-      <Status label={projectStatusLabel(project)} />
-    </h3>
+  <div class="project-head">
+    <h3 class="featured-title">{href ? <a href={href}>{d.title}</a> : d.title}</h3>
     {d.full_name && <p class="project-fullname">{d.full_name}</p>}
+    {
+      status && (
+        <p class="project-status">
+          <Status label={status} />
+        </p>
+      )
+    }
+  </div>
+  <div class="project-body">
+    {
+      d.figure && (
+        <Plate
+          image={d.figure.image}
+          alt={d.figure.alt}
+          caption={d.figure.caption}
+          figure={figure}
+          zoom
+          sizes="(min-width: 80rem) 588px, (min-width: 64rem) 46vw, (min-width: 40rem) 56vw, calc(100vw - 2rem)"
+        />
+      )
+    }
     <p class="project-summary">{d.summary}</p>
-    {d.facts && <p class="featured-facts">{d.facts}</p>}
+    {
+      stats ? (
+        <ul class="stat-strip">
+          {stats.map((s) => (
+            <li>
+              <span class="stat-n">{s.n}</span> <span class="stat-l">{s.label}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        d.facts && <p class="featured-facts">{d.facts}</p>
+      )
+    }
     {
       versions.length > 0 && (
         <ol class="versions-inline" aria-label={`${d.title} versions`}>
-          {versions.map((v, i) => (
+          {versions.map((v) => (
             <li>
-              {i > 0 && (
-                <span class="arrow" aria-hidden="true">
-                  →{' '}
-                </span>
-              )}
               {v.pub ? (
                 <a href={pubHref(v.pub)}>
                   {v.version} {v.year}
@@ -47,7 +80,14 @@ const versions = d.versions.map((v) => {
               ) : (
                 `${v.version} ${v.year}`
               )}
-              {v.pub && <span class="muted"> · {v.pub.data.venue}</span>}
+              {v.pub && (
+                <>
+                  <span class="version-sep" aria-hidden="true">
+                    {' · '}
+                  </span>
+                  <span class="version-venue">{v.pub.data.venue}</span>
+                </>
+              )}
             </li>
           ))}
         </ol>
